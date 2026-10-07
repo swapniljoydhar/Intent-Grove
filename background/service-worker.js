@@ -953,6 +953,24 @@ async function getDashboardStats() {
   const state = await loadState();
   const now = Date.now();
   const ONE_DAY_MS = DAY_MS;
+  const ONE_WEEK_MS = 7 * ONE_DAY_MS;
+  const currentDate = new Date(now);
+  const currentWeekStart = Date.UTC(
+    currentDate.getUTCFullYear(), currentDate.getUTCMonth(),
+    currentDate.getUTCDate() - ((currentDate.getUTCDay() + 6) % 7)
+  );
+  const weeklyTrendBuckets = new Map();
+  for (let offset = 7; offset >= 0; offset--) {
+    const weekStart = currentWeekStart - offset * ONE_WEEK_MS;
+    const weekStartDate = new Date(weekStart);
+    const weekKey = weekStartDate.toISOString().slice(0, 10);
+    weeklyTrendBuckets.set(weekKey, {
+      weekStart: weekKey,
+      weekLabel: weekStartDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }),
+      intentionsStarted: 0,
+      deepestPathTotal: 0
+    });
+  }
 
   // Calculate total sessions and focus time
   let totalSessions = 0;
@@ -988,6 +1006,22 @@ async function getDashboardStats() {
     // sessions accrue to the present.
     const sessionEnd = session.endedAt || (session.status === 'completed' ? sessionStart : now);
     const sessionDuration = Math.max(0, (sessionEnd - sessionStart) / 1000);
+
+    // These are observable activity trends, not an inference about whether a
+    // browsing path served its author's intention. A session contributes to
+    // the week in which its intention was started.
+    if (Number.isFinite(session.startedAt)) {
+      const startedDate = new Date(session.startedAt);
+      const weekStart = Date.UTC(
+        startedDate.getUTCFullYear(), startedDate.getUTCMonth(),
+        startedDate.getUTCDate() - ((startedDate.getUTCDay() + 6) % 7)
+      );
+      const bucket = weeklyTrendBuckets.get(new Date(weekStart).toISOString().slice(0, 10));
+      if (bucket) {
+        bucket.intentionsStarted++;
+        bucket.deepestPathTotal += session.nodes.reduce((deepest, node) => Math.max(deepest, Math.max(0, Number(node.depth) || 0)), 0);
+      }
+    }
     
     for (const node of session.nodes) {
       // Domain counting: only count valid HTTP/HTTPS URLs
@@ -1056,6 +1090,15 @@ async function getDashboardStats() {
     return { day: date.toLocaleDateString(undefined, { weekday: 'short' }), date: dateKey, minutes: Math.round(seconds / 60) };
   });
 
+  const weeklyTrendData = [...weeklyTrendBuckets.values()].map((bucket) => ({
+    weekStart: bucket.weekStart,
+    weekLabel: bucket.weekLabel,
+    intentionsStarted: bucket.intentionsStarted,
+    averageDeepestPath: bucket.intentionsStarted
+      ? Number((bucket.deepestPathTotal / bucket.intentionsStarted).toFixed(1))
+      : 0
+  }));
+
   // Format domain data (top 5)
   const domainData = Object.entries(domainCounts)
     .map(([domain, count]) => ({ domain, count }))
@@ -1106,6 +1149,7 @@ async function getDashboardStats() {
     streakMilestone,
     agedSavedCount,
     weeklyData,
+    weeklyTrendData,
     domainData,
     history,
     savedItems

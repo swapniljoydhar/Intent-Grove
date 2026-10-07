@@ -81,7 +81,7 @@ async function openDashboard(t, state = stateFor(), viewport = { width: 1440, he
           if (message.type === 'SPA_NAVIGATION') return null;
           if (message.type === 'GET_DASHBOARD_STATS') {
             return { totalSessions: state.sessions.length, totalFocusTime: 0, currentStreak: 0,
-              weeklyData: [], domainData: [], history: [], savedItems: [] };
+              weeklyData: [], weeklyTrendData: state.weeklyTrendData || [], domainData: [], history: [], savedItems: [] };
           }
           throw new Error(`Unexpected test message: ${message.type}`);
         }
@@ -436,6 +436,51 @@ test('every trail note reads as a sentence instead of an internal identifier', a
   assert.equal(await page.locator('#tree').isVisible(), true);
   assert.equal(await page.locator('#stats-tab').isVisible(), false);
   assert.equal(await page.locator('#branch-detail').isVisible(), false);
+});
+
+test('weekly intention charts show eight factual activity and path buckets', async t => {
+  const state = stateFor();
+  state.weeklyTrendData = [
+    ['2026-07-27', 'Jul 27', 0, 0], ['2026-08-03', 'Aug 3', 0, 0],
+    ['2026-08-10', 'Aug 10', 0, 0], ['2026-08-17', 'Aug 17', 0, 0],
+    ['2026-08-24', 'Aug 24', 0, 0], ['2026-08-31', 'Aug 31', 0, 0],
+    ['2026-09-07', 'Sep 7', 1, 5], ['2026-09-14', 'Sep 14', 2, 2.5]
+  ].map(([weekStart, weekLabel, intentionsStarted, averageDeepestPath]) => ({
+    weekStart, weekLabel, intentionsStarted, averageDeepestPath
+  }));
+  const page = await openDashboard(t, state);
+  await page.locator('[data-tab="stats"]').click();
+
+  const intentions = page.locator('#weeklyIntentionsChart .weekly-trend-bar');
+  const paths = page.locator('#weeklyPathChart .weekly-trend-bar');
+  assert.equal(await intentions.count(), 8);
+  assert.equal(await paths.count(), 8);
+  assert.equal(await intentions.nth(6).locator('title').textContent(), 'Week of 2026-09-07: 1 intention started');
+  assert.equal(await intentions.nth(7).locator('title').textContent(), 'Week of 2026-09-14: 2 intentions started');
+  assert.equal(await paths.nth(7).locator('title').textContent(), 'Week of 2026-09-14: 2.5 average deepest navigation steps');
+  assert.match(await page.locator('#weeklyPathChart').getAttribute('aria-label'), /^Average deepest path in navigation steps for the last eight Monday–Sunday UTC weeks:/);
+  assert.match(await page.locator('#weeklyPathChart').getAttribute('aria-label'), /Sep 14: 2\.5/);
+  const pathHelp = await page.locator('#weeklyPathChart').evaluate((svg) => svg.closest('.chart-card').querySelector('.chart-help').textContent);
+  assert.match(pathHelp, /does not tell us whether a path served your intention/i);
+
+  const mobilePage = await openDashboard(t, state, { width: 390, height: 844 });
+  await mobilePage.locator('[data-tab="stats"]').click();
+  for (const chartId of ['#weeklyIntentionsChart', '#weeklyPathChart']) {
+    const rightEdge = await mobilePage.locator(chartId).evaluate((svg) => svg.getBoundingClientRect().right);
+    assert.ok(rightEdge <= 390, `${chartId} must fit within a 390px viewport (right edge ${rightEdge})`);
+  }
+  const lightPathFill = await mobilePage.locator('#weeklyPathChart .weekly-trend-bar').first().evaluate((bar) => getComputedStyle(bar).fill);
+  await mobilePage.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+  const darkPathFill = await mobilePage.locator('#weeklyPathChart .weekly-trend-bar').first().evaluate((bar) => getComputedStyle(bar).fill);
+  assert.notEqual(darkPathFill, lightPathFill, 'the weekly path chart must respond to the selected dark theme');
+});
+
+test('weekly intention charts explain when no sessions fall in the displayed weeks', async t => {
+  const page = await openDashboard(t);
+  await page.locator('[data-tab="stats"]').click();
+  assert.equal(await page.locator('#weeklyIntentionsChart .weekly-trend-bar').count(), 0);
+  assert.equal(await page.locator('#weeklyIntentionsChart .trend-empty-state').textContent(), 'No intentions started in these eight weeks.');
+  assert.equal(await page.locator('#weeklyPathChart .trend-empty-state').textContent(), 'No intentions started in these eight weeks.');
 });
 
 test('young trees have a filled cartoon crown, a wooden trunk, and selectable pages', async t => {
