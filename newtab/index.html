@@ -33,25 +33,25 @@
     <!-- Onboarding overlay (first run) -->
     <div id="onboarding-overlay" class="onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" hidden>
       <div class="onboarding-card">
-        <p class="onboarding-kicker">A QUIETER WAY TO BROWSE</p>
+        <p class="onboarding-kicker">A REFLECTION TOOL, NOT A TEST</p>
         <h2 id="onboarding-title" class="onboarding-title">Your browsing, your choice.</h2>
-        <p id="onboarding-intro" class="onboarding-intro">A quick tour. Skip it any time and explore at your own pace.</p>
+        <p id="onboarding-intro" class="onboarding-intro">See how it works in four short screens. Skip the tour or replay it from Settings whenever you like.</p>
         <div class="guide-viewport" aria-live="polite">
           <figure class="guide-slide" data-guide-slide="0">
             <img src="guide-images/01-intention.png" alt="Intent Grove New Tab page with the intention form and Plant Intention button" width="1000" height="620">
-            <figcaption><strong>1. Name what you came to do</strong><span>Write a flexible intention. Planting opens it as a search; the note stays on this device.</span></figcaption>
+            <figcaption><strong>1. Set an intention</strong><span>Starting sends your intention to your chosen search provider. Your optional personal note stays on this device.</span></figcaption>
           </figure>
           <figure class="guide-slide" data-guide-slide="1" hidden>
             <img src="guide-images/02-choice.png" alt="Intent Grove companion reminder with options to continue, return, save a page, or start a new mission" width="1000" height="620">
-            <figcaption><strong>2. Pause, then choose</strong><span>A reminder describes recorded navigation depth. It can’t tell whether a page is relevant. Continue, return, save it, or begin again.</span></figcaption>
+            <figcaption><strong>2. Notice the path; choose what comes next</strong><span>At your chosen depth, a reminder shows recorded navigation distance. It cannot tell whether a page was useful. Keep exploring, return, save the page, or start a new intention.</span></figcaption>
           </figure>
           <figure class="guide-slide" data-guide-slide="2" hidden>
-            <img src="guide-images/03-garden.png" alt="Garden Map from the Intent Grove dashboard showing a fictional sample tree, its selectable browsing leaves, and the page picker" width="1052" height="819">
-            <figcaption><strong>3. Reflect on the path</strong><span>This example uses sample paths. Select a leaf or use the page picker to retrace a route. Branch depth is distance from the start, not a score or verdict.</span></figcaption>
+            <img src="guide-images/03-garden.png" alt="Garden Map from the Intent Grove dashboard showing a fictional sample tree, its selectable browsing leaves, and the page picker" width="1052" height="821">
+            <figcaption><strong>3. Review your browsing path</strong><span>This example tree uses sample pages. Select a leaf or use the page picker to trace a route. Branch depth shows navigation distance—not relevance, alignment, or a score.</span></figcaption>
           </figure>
           <figure class="guide-slide" data-guide-slide="3" hidden>
             <img src="guide-images/04-settings.png" alt="Intent Grove settings for reminder timing, motion, firmer reminders, and pausing the companion on chosen sites" width="1000" height="620">
-            <figcaption><strong>4. Make the rhythm yours</strong><span>Adjust or pause reminders in Settings. The toolbar popup offers quick session controls. You can change your mind at any time.</span></figcaption>
+            <figcaption><strong>4. Choose your own reminders</strong><span>Adjust reminder timing or pause the companion on selected sites in Settings. The toolbar popup offers quick controls. Change your mind at any time.</span></figcaption>
           </figure>
         </div>
         <div class="guide-controls" aria-label="Walkthrough controls">
@@ -59,14 +59,14 @@
           <span id="guide-progress" class="guide-progress">1 of 4</span>
           <button id="guide-next" type="button" class="guide-nav" aria-label="Next walkthrough screen">→</button>
         </div>
-        <div class="browser-notice-step">
+        <div class="browser-notice-step" hidden>
           <span class="step-icon" aria-hidden="true">👇</span>
           <div class="step-content">
             <strong>Seeing a Brave bar at the bottom?</strong>
             <p>Open <em>Customize Brave</em> → <em>Hide footer on New Tab page</em>. The browser controls this footer; Intent Grove can’t hide it.</p>
           </div>
         </div>
-        <div class="browser-notice-arrow" aria-hidden="true"><span>Look along the bottom edge</span><b>↓</b></div>
+        <div class="browser-notice-arrow" aria-hidden="true" hidden><span>Look along the bottom edge</span><b>↓</b></div>
         <div class="onboarding-actions">
           <button id="onboarding-skip" type="button" class="onboarding-skip">Skip tour</button>
           <button id="onboarding-start" type="button" class="plant-btn onboarding-start-btn">
@@ -102,12 +102,10 @@
         <p class="intro-eyebrow">INTENTIONAL BROWSING</p>
         <h2 id="main-heading" class="main-heading">
           What would you like<br/>
-          <em class="highlight-text">to cultivate today?</em>
+          <em class="highlight-text">to spend time on today?</em>
         </h2>
         <p class="hero-description">
-          Set a gentle intention before exploring the web. 
-          Intent Grove helps you notice when you're wandering, 
-          without blocking or judging your curiosity.
+          Write down what you hope to do, then browse freely. Intent Grove records the pages you move through and roughly how long the session lasts. It can invite you to pause, but it never blocks a page or decides whether a detour was useful. There is no score.
         </p>
       </div>
       
@@ -132,19 +130,19 @@
               <span id="char-current">0</span><span class="char-separator">/</span><span id="char-max">140</span>
             </div>
           </div>
-          <p id="input-hint" class="input-hint">Be specific but flexible. This guides your awareness, not a rigid rule.</p>
+          <p id="input-hint" class="input-hint">Keep it flexible. This is a reference point for reflection, not a rule.</p>
           <label class="form-label note-label" for="mission-note">
             <span class="label-icon" aria-hidden="true">✦</span>
             Why does this matter today? <span class="optional-label">(optional)</span>
           </label>
-          <textarea id="mission-note" maxlength="280" rows="2" placeholder="A small reason can help you return to the root."></textarea>
-          <p class="input-hint">Your note is stored in your local garden. It is not sent to websites.</p>
+          <textarea id="mission-note" maxlength="280" rows="2" placeholder="For example: I want to compare options before deciding."></textarea>
+          <p class="input-hint">Your personal note stays on this device; it is not sent to search providers or websites.</p>
           <fieldset class="return-plan">
             <legend>If I reach a reminder point, I plan to… <span class="optional-label">(optional)</span></legend>
             <label><input type="radio" name="return-plan" value="return"> Return to my intention</label>
             <label><input type="radio" name="return-plan" value="save"> Save this for later</label>
             <label><input type="radio" name="return-plan" value="decide" checked> Pause and choose in the moment</label>
-            <p class="input-hint">Your plan is a private prompt you chose. It never removes the other choices.</p>
+            <p class="input-hint">Your plan is a private reminder you chose. All other choices remain available.</p>
           </fieldset>
         </div>
         

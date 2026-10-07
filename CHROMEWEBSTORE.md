@@ -1,6 +1,6 @@
 # Chrome Web Store Listing — Intent Grove
 
-> Last Updated: 2026-10-02
+> Last Updated: 2026-10-08
 
 ## Store Listing
 
@@ -28,15 +28,17 @@ Key Features:
 - Local browsing records: Mission notes, navigation history, and settings stay in browser storage. No telemetry, extension server, or cloud sync. Planting a mission sends its text to the selected search provider as a query.
 - Dark mode and reduced motion support: Built with accessibility in mind, supporting light/dark themes and system reduced-motion preferences.
 - Single-page application awareness: Tracks branch transitions accurately on modern web apps like YouTube, GitHub, and Notion.
+- Four-screen first-run tour: A skippable walkthrough of the real New Tab, reminder, Garden, and Settings surfaces. The illustrative captures are not a live browsing exercise; the tour saves no practice browsing data and opens no outside pages. Replay it from Settings.
 - Keyboard shortcuts: Alt+F starts or ends a mission; Alt+M returns you to the mission origin.
 
 How to Use:
 1. Open a new tab or click the Intent Grove toolbar icon.
-2. Enter your intention (for example: "Research camera lenses for landscape photography"). Press Enter or choose Plant Intention to save it locally and navigate that same tab to your selected search-results starting point.
-3. Browse normally. Watch the discreet companion chip at the top right of the page.
-4. At your chosen path depth, the card shows navigation and elapsed-time context; you choose whether to return, save the page for later, continue, or set this page as a new mission.
-5. Open the Garden Dashboard anytime to see the recorded navigation tree and elapsed-session summaries. The garden cannot tell whether a page served your intention.
-6. Tip: Alt+F starts or ends a mission from anywhere; Alt+M returns you to the mission origin.
+2. Optionally take the four-screen tour; it is skippable and uses example captures, not a tracked practice session.
+3. Enter your intention (for example: "Research camera lenses for landscape photography"). Press Enter or choose Plant Intention to save it locally and navigate that same tab to your selected search-results starting point.
+4. Browse normally. Watch the discreet companion chip at the top right of the page.
+5. At your chosen path depth, the card shows navigation and elapsed-time context; you choose whether to return, save the page for later, continue, or set this page as a new mission.
+6. Open the Garden Dashboard anytime to see the recorded navigation tree and elapsed-session summaries. The garden cannot tell whether a page served your intention.
+7. Tip: Alt+F starts or ends a mission from anywhere; Alt+M returns you to the mission origin.
 
 Privacy & Local Storage:
 Intent Grove does not connect to an extension-operated server or include third-party analytics. Mission notes, navigation signals, and garden history remain on this device in local extension storage. When you plant an intention, the browser or selected search provider receives that text as a search query. Your data belongs to you.
@@ -135,4 +137,4 @@ Run `npm ci`, then `npm run test:all` and `npm run package`. The resulting `dist
 | 0.3.5 | 2026-09-18 | Added a rotating reflection prompt to the choice card; tuned the New Tab atmosphere (slower mist and sun, paint containment) with the existing motion kill-switches intact. | Draft |
 | 0.3.6 | 2026-09-18 | Compact tier-aware Quiet discoveries reveal with restrained seed/bloom/seasonal treatment; automated SPA performance-regression checks in CI. | Draft |
 | 0.3.7 | 2026-10-01 | Rebrand to Intent Grove, user-agency and clarity updates: fictional first-run tree demo, one-tap rhythm presets, current-page mission action, compost reminder, neutral path and elapsed-time explanations, non-graded bounded Quiet discoveries, activity-signal day calculation, lower-cost New Tab atmosphere, evidence/limits guide, and shared botanical icon. | Draft |
-| Unreleased | 2026-10-02 | Migrate legacy Focus Forest storage/theme values safely, rename internal identifiers with compatibility handling for open tabs, and harden Windows packaging. Details in CHANGELOG.md. | Pending release |
+| 0.3.8 | 2026-10-08 | Replace the retired sample demo with an optional four-screen walkthrough, correct outdated walkthrough claims, clarify that navigation depth is not an intent-alignment score, use realistic example screens, and show Brave-only new-tab-footer help only in Brave. | Pending release |
