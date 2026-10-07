@@ -1,6 +1,6 @@
 # Intent Grove
 
-Intent Grove is a calm, local-first extension for Chromium-family browsers. You plant an intention — *"Compare laptops for university"* — then browse normally while it grows your session into a small garden. When useful research gets several steps away from where it began, it can offer a gentle moment to reflect and a set of choices. **It never blocks anything, judges relevance, or grades your path.** Browsing records stay on your device; when you plant, your chosen search provider receives the mission as a search query.
+Intent Grove is a calm, local-first extension for Chromium-family browsers. Set an intention — *"Compare laptops for university"* — then browse normally while it grows your session into a small garden. If your recorded route reaches a depth you choose, it can offer a gentle moment to reflect and a set of choices. **Depth is navigation distance, not a measure of relevance or a score:** only you can decide whether a detour served your intention. Browsing records stay on your device; when you start, your chosen search provider receives the intention as a search query.
 
 There is no generative AI, no summarizer, no remote model, and no page-content classifier — just a transparent branch model built from navigation signals. Intent Grove cannot tell whether a page is relevant or whether you are paying attention; the detour is yours to keep, save, or leave. It is a reflection aid, not a clinically validated treatment or a proven way to reduce browsing time. Its reminders may help some people notice a mismatch, and may not help others.
 
@@ -24,15 +24,15 @@ After updating files, click **Reload** on the extension card, then refresh open 
 
 ## How it works
 
-- **Plant a mission** on the new-tab page, with an optional private note about *why it matters today*. Your first step opens through your browser's own search provider (or a local override).
-- **A small chip** keeps the mission visible on ordinary websites. Drag it anywhere; it remembers the spot for that site in that tab, and no website can read that (or anything else).
-- **Links you follow grow branches.** The garden understands SPA route changes, new tabs, back/forward, and redirects without inventing depth.
+- **Set an intention for a browsing session** (the app calls it a mission) on the new-tab page. An optional note records *why it matters today*, and an optional response plan reminds you of a choice you selected. Starting opens a search through your browser's provider (or a local override).
+- **A small chip** keeps the intention visible on ordinary websites. Drag it anywhere; its position is stored privately by the extension for that site and tab, not in the website's storage.
+- **The garden traces navigation, not meaning.** It uses page URLs and titles plus link, tab, redirect, and single-page-app route signals to connect recorded steps. When a connection is uncertain, it does not claim to know whether a page was related or useful.
 - **When a branch gets deep,** the page settles slightly and the chip says so. At your choice threshold, a non-blocking corner card offers four equal choices: **Keep exploring · Return to my mission · Save this for later · Start a new mission.** Nothing is ever hidden or blocked.
 - **Firmer reminders (opt-in)** add factual context — recorded pages and elapsed time since your intention, plus a reminder that you wrote down *why*. The choices never change. There is no shame, score, penalty, or hidden pressure mechanic.
 - **Completed missions become storybook gardens** in the dashboard: every leaf is a recorded page. Trace a path home, prune, or compost. The shape shows navigation, not whether a page fit your intention.
 - **Recorded-day milestones** mark 3 / 7 / 14 / 30 days with an explicit mission event. Unattended elapsed time alone does not count, and a gap carries no penalty.
 - **Quiet discoveries (opt-in):** occasional notes from a small offline catalog when you return, save a page, or end a mission. These are bounded and do not depend on path depth or presumed relevance.
-- **A five-step sample demo** lets you try the tree and choice card without saving browsing data or opening external pages.
+- **A short, skippable four-screen tour** shows the real New Tab, reminder, garden, and Settings screens. It uses example captures; taking the tour does not record a practice browsing session or open outside pages. Replay it from Settings whenever you like.
 - **Make this page my new mission** lets a useful detour become the new intention while preserving the completed garden.
 - **The companion follows your browser's light/dark preference**, and the whole extension respects reduced-motion settings.
 - **Shortcuts:** `Alt+F` starts or ends a mission · `Alt+M` returns you to the mission origin.
@@ -78,10 +78,7 @@ The current direction is a transparent reflection tool: factual navigation conte
 | # | Item | Status |
 | --- | --- | --- |
 | 1 | Per-fork manual QA pass (Brave, Edge, Opera, Vivaldi) driven by a generated checklist script — required before store submission | Planned (owner) |
-| 2 | Throttle title-only SPA updates (coalesce same-URL title changes to at most one message pair per 5 s) to protect the message budget on title-mutating sites | **Shipped 2026-09-22** — pinned by Gate 7 in real Chromium |
-| 3 | Automated coverage for the untested branches of the chip-position system: `pagehide` flush, rate-limit retry, clear-data theme guard | Planned — rate-limit branch covered; flush + theme guard remain manual-checklist items |
-| 4 | Popup error state distinct from the empty state; settings rewards copy re-synced when streaks ship | **Shipped 2026-09-22** — retry affordance in the popup; rewards copy now truthful about streaks |
-| 5 | Dark-mode companion chip (`prefers-color-scheme`) and a `return-to-mission` keyboard command | **Shipped 2026-09-22** — Alt+M returns to the mission origin |
+| 2 | Add a real-browser regression test for saving the companion position during `pagehide` and for clearing the theme preference when all data is deleted | Planned — rate-limit retry and normal delete-all behavior are covered; the unload-time position flush still needs browser-level coverage |
 
 ## Development
 
@@ -107,4 +104,3 @@ npm run preview:trees         # local gallery of the real SVG tree renderer
 - **[EVIDENCE.md](EVIDENCE.md)** — what current research can and cannot support, design guardrails, and a private evaluation plan.
 - **[SECURITY.md](SECURITY.md)** · original [security review](SECURITY_REVIEW_2026-08-15.md) · [modified-fork audit](AUDIT_REPORT_2026-08-16.md) · [September 2026 audit](AUDIT_2026-09-21.md)
 - **[CHROMEWEBSTORE.md](CHROMEWEBSTORE.md)** — store listing copy and per-permission justification · **[CONTRIBUTING.md](CONTRIBUTING.md)**
-

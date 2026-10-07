@@ -607,6 +607,17 @@ test('the welcome overlay keeps focus instead of the field behind it', async t =
   assert.equal(await page.locator('#mission-input').evaluate(el => document.activeElement === el), false);
 });
 
+test('Brave-only footer guidance stays hidden in other Chromium browsers', async t => {
+  const page = await openDashboard(t);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'brave', { configurable: true, value: { isBrave: async () => false } });
+  });
+  await page.goto('https://intent-grove.test/newtab/index.html');
+  await page.waitForFunction(() => document.querySelector('#onboarding-overlay')?.hidden === false);
+  await page.waitForFunction(() => document.querySelector('.browser-notice-step')?.hidden === true);
+  assert.equal(await page.locator('.browser-notice-arrow').isVisible(), false);
+});
+
 test('first-run walkthrough uses real guide screens with accessible, bounded navigation', async t => {
   const page = await openDashboard(t);
   await page.goto('https://intent-grove.test/newtab/index.html');

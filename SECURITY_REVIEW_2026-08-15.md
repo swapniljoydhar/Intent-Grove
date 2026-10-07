@@ -101,14 +101,13 @@ This pass did not add frameworks, third-party sanitizers, remote services, AI, t
 The following issues identified in the initial security and performance review were fixed in a subsequent remediation pass:
 
 - **Critical syntax error** in content/content.js (escapeHtml object literal) — the content script was completely broken due to ''' instead of ''. Fixed by correcting the single-quote mapping value.
-- **Medium async mutation bug** in ackground/service-worker.js (onHistoryStateUpdated listener) — 	rackLink was not awaited inside the chrome.tabs.get callback, risking lost mutations on MV3 service worker termination. Fixed by switching to promise-based chrome.tabs.get and awaiting 	rackLink.
-- **Medium performance issue** — shadow.innerHTML +=  in content/content.js caused full shadow DOM re-parse. Fixed by switching to insertAdjacentHTML('beforeend', ...).
-- **Medium performance issue** — sheetCopy.innerHTML in content/content.js for dynamic choice-sheet content. Fixed by replacing with DOM-safe 
-eplaceChildren() and ppend() using text nodes and elements.
+- **Medium async mutation bug** in background/service-worker.js (onHistoryStateUpdated listener) — trackLink was not awaited inside the chrome.tabs.get callback, risking lost mutations on MV3 service worker termination. Fixed by switching to promise-based chrome.tabs.get and awaiting trackLink.
+- **Medium performance issue** — appending with `shadow.innerHTML +=` in content/content.js caused full Shadow DOM re-parsing. Fixed by switching to insertAdjacentHTML('beforeend', ...).
+- **Medium performance issue** — sheetCopy.innerHTML in content/content.js for dynamic choice-sheet content was replaced with DOM-safe replaceChildren() and append() using text nodes and elements.
 - **Medium storage round-trip performance** — Every loadState() call re-read from chrome.storage.local and re-normalized the full state. Fixed by adding an in-memory state cache in shared/state.js with clearStateCache() on mutation failures.
-- **Low unused import** — Removed unused canonicalUrl import from ackground/service-worker.js.
-- **Low dead export** — Removed unused indNode export from shared/state.js.
-- **Low unused import** — Removed unused logCritical import from ackground/service-worker.js.
+- **Low unused import** — Removed unused canonicalUrl import from background/service-worker.js.
+- **Low dead export** — Removed unused findNode export from shared/state.js.
+- **Low unused import** — Removed unused logCritical import from background/service-worker.js.
 - **Low security hardening** — Added sender identity validation (sender.id === chrome.runtime.id) in the message listener.
 - **Cleanup** — Deleted obsolete test harnesses, test fixtures, and internal audit artifacts that were not part of the extension.
 
@@ -191,4 +190,3 @@ demonstration before the fix.
   existing `renderSafely`/`initSafely` wrappers; remaining UX hardening only.
 - **F-13** (`canonicalUrl` raw-string fallback) — privileged navigation paths use
   `safeHttpUrl()`; a future API split would improve naming only.
-

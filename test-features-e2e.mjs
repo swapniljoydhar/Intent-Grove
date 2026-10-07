@@ -28,7 +28,12 @@ for (const entry of ['manifest.json', 'background', 'content', 'dashboard', 'ico
 }
 
 function pageHtml(title, links) {
-  const body = links.map(([href, text]) => `<p><a id="link-${text.replace(/\W/g, '')}" href="${href}">${text}</a></p>`).join('\n');
+  const body = links.map(([href, testId]) => {
+    const text = testId === 'p1' ? 'Open a research result'
+      : testId.startsWith('next') ? 'View related information'
+        : testId.startsWith('self') ? 'Review this page' : testId;
+    return `<p><a id="link-${testId.replace(/\W/g, '')}" href="${href}">${text}</a></p>`;
+  }).join('\n');
   return `<!doctype html><html><head><title>${title}</title></head><body><h1>${title}</h1>${body}</body></html>`;
 }
 const server = http.createServer((req, res) => {
@@ -38,7 +43,8 @@ const server = http.createServer((req, res) => {
   const match = /^\/p\/(\d+)$/.exec(url.pathname);
   if (match) {
     const n = Number(match[1]);
-    res.end(pageHtml(`Page ${n}`, [[`/p/${n + 1}`, `next${n + 1}`], [`/p/${n}`, `self${n}`]]));
+    const titles = ['Search results', 'Program overview', 'Admission requirements', 'Scholarship options', 'Application timeline', 'Research opportunities'];
+    res.end(pageHtml(titles[n] || `Related result ${n}`, [[`/p/${n + 1}`, `next${n + 1}`], [`/p/${n}`, `self${n}`]]));
     return;
   }
   res.end(pageHtml('Root', [['/p/1', 'p1']]));
@@ -266,8 +272,12 @@ after(async () => {
 
 test('F1  onboarding: overlay shows on first run, dismiss persists and moves focus', async () => {
   await resetState();
+  await extPage.addInitScript(() => {
+    Object.defineProperty(navigator, 'brave', { configurable: true, value: { isBrave: async () => true } });
+  });
   await extPage.goto(`chrome-extension://${extensionId}/newtab/index.html`);
   await extPage.waitForSelector('#onboarding-overlay:not([hidden])', { timeout: 10000 });
+  await extPage.waitForFunction(() => document.querySelector('.browser-notice-step')?.hidden === false);
   assert.match(
     await extPage.locator('.browser-notice-step').innerText(),
     /Customize Brave.*Hide footer on New Tab page.*can.t hide it/s,
@@ -276,6 +286,8 @@ test('F1  onboarding: overlay shows on first run, dismiss persists and moves foc
   assert.match(await extPage.locator('.browser-notice-arrow').innerText(), /bottom edge/i, 'first-run onboarding arrow must identify where to look');
   assert.equal(await extPage.locator('.browser-notice-arrow').isVisible(), true, 'first-run onboarding must point toward the browser-owned bottom notice');
   assert.equal(await extPage.locator('[data-guide-slide]').count(), 4, 'walkthrough must introduce the four core surfaces');
+  assert.match(await extPage.locator('[data-guide-slide="0"]').innerText(), /optional personal note stays on this device/i);
+  assert.match(await extPage.locator('[data-guide-slide="1"]').innerText(), /cannot tell whether a page was useful/i);
   if (process.env.CAPTURE_ONBOARDING_GUIDE !== '1') {
     for (const image of await extPage.locator('[data-guide-slide] img').all()) {
       await image.evaluate(img => img.decode());
@@ -383,11 +395,11 @@ test('F3  badge lifecycle: planted green, paused gold, deep warm, ended empty', 
 test('F4  companion copy tracks depth; choice card appears at the threshold', async () => {
   await resetState();
   await patchSettings({ gentleDepth: 2, choiceDepth: 3 });
-  const page = await plantMission('Depth copy probe', webPage, 'return');
+  const page = await plantMission('Compare computer science programs', webPage, 'return');
   assert.equal(activeSessionOf(await readState())?.responsePlan, 'return', 'the chosen if-then plan persists with its mission');
   const cdp = await context.newCDPSession(page);
   let info = await waitForChip(page, cdp, (c) => c.present && !c.hidden, 'chip visible on the tracked page');
-  assert.equal(info.missionText, 'Depth copy probe', 'chip shows the mission');
+  assert.equal(info.missionText, 'Compare computer science programs', 'chip shows the mission');
   assert.equal(info.stateText, 'Growing from this mission', 'root copy at depth 0');
   await page.click('#link-p1');
   await page.waitForURL(`${baseUrl}/p/1`);
@@ -477,7 +489,7 @@ test('F7  post-compost continuity: the tab keeps growing the garden (orphan fix 
   assert.equal(node.relationshipConfidence, 'external', 'post-compost re-entry is a neutral external path');
   const cdp = await context.newCDPSession(page);
   const info = await waitForChip(page, cdp, (c) => c.present && !c.hidden, 'chip returns after re-entry');
-  assert.equal(info.missionText, 'Depth copy probe', 'chip shows the ongoing mission again');
+  assert.equal(info.missionText, 'Compare computer science programs', 'chip shows the ongoing mission again');
 });
 
 test('F8  Go Home from the popup: activates the origin tab without reload and earns a return reward', async () => {
@@ -720,5 +732,3 @@ test('F14 no uncaught errors surfaced during the whole feature walk', async () =
   const real = [...swErrors, ...webErrors].filter((e) => !/rate limit/i.test(e));
   assert.deepEqual(real, [], 'service worker and pages must stay free of uncaught errors');
 });
-
-

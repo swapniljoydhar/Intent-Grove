@@ -20,8 +20,20 @@ const guideSlides = [...document.querySelectorAll('[data-guide-slide]')];
 const guidePrevious = document.querySelector('#guide-previous');
 const guideNext = document.querySelector('#guide-next');
 const guideProgress = document.querySelector('#guide-progress');
+const browserNotice = document.querySelector('.browser-notice-step');
+const browserNoticeArrow = document.querySelector('.browser-notice-arrow');
 const compostReminder = document.querySelector('#compost-reminder');
 const compostReminderCopy = document.querySelector('#compost-reminder-copy');
+
+async function updateBrowserNotice() {
+  let isBrave = false;
+  try {
+    isBrave = typeof navigator.brave?.isBrave === 'function' && await navigator.brave.isBrave() === true;
+  } catch { /* Browser detection is optional; never show a potentially wrong tip. */ }
+  if (browserNotice) browserNotice.hidden = !isBrave;
+  if (browserNoticeArrow) browserNoticeArrow.hidden = !isBrave;
+}
+void updateBrowserNotice();
 
 /**
  * Send a message to the service worker with error handling

@@ -238,7 +238,7 @@ body[data-page-visibility="hidden"] .forest-scene .tree-canopy {
 .guide-slide { margin: 0; text-align: left; }
 .guide-slide[hidden] { display: none; }
 .guide-slide img { display: block; width: 100%; aspect-ratio: 1000 / 620; object-fit: contain; background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-md) var(--radius-md) 0 0; }
-.guide-slide[data-guide-slide="2"] img { aspect-ratio: 1052 / 819; }
+.guide-slide[data-guide-slide="2"] img { aspect-ratio: 1052 / 821; }
 .guide-slide figcaption { display: flex; flex-direction: column; gap: 3px; padding: 11px 14px 13px; }
 .guide-slide figcaption strong { color: var(--color-text-primary); font-size: .95rem; }
 .guide-slide figcaption span { color: var(--color-text-secondary); font-size: .8rem; line-height: 1.45; }
