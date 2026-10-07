@@ -477,6 +477,82 @@ function renderWeeklyChart(weeklyData) {
   });
 }
 
+function renderWeeklyTrendChart(svgId, weeklyTrendData, metric) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.replaceChildren();
+  const data = Array.isArray(weeklyTrendData) ? weeklyTrendData : [];
+  const isIntentions = metric === 'intentionsStarted';
+  const formatValue = (value) => isIntentions ? String(Math.round(value)) : Number(value).toFixed(1);
+  const description = isIntentions
+    ? 'Intentions started'
+    : 'Average deepest path in navigation steps';
+  if (!data.some((week) => week.intentionsStarted > 0)) {
+    svg.setAttribute('aria-label', `${description} for the last eight Monday–Sunday UTC weeks. No intention sessions were recorded during this period.`);
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', '200'); text.setAttribute('y', '125');
+    text.setAttribute('text-anchor', 'middle'); text.setAttribute('class', 'trend-empty-state');
+    text.textContent = 'No intentions started in these eight weeks.';
+    svg.append(text);
+    return;
+  }
+
+  const values = data.map((week) => Math.max(0, Number(week[metric]) || 0));
+  const accessibleValues = data.map((week, index) => `${week.weekLabel}: ${formatValue(values[index])}`).join('; ');
+  svg.setAttribute('aria-label', `${description} for the last eight Monday–Sunday UTC weeks: ${accessibleValues}.`);
+  const maxValue = isIntentions ? Math.max(4, Math.ceil(Math.max(...values))) : Math.max(1, ...values);
+  const chartTop = 32; const chartBottom = 216; const chartHeight = chartBottom - chartTop;
+  for (let i = 0; i <= 4; i++) {
+    const y = chartBottom - chartHeight * i / 4;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', '42'); line.setAttribute('y1', String(y));
+    line.setAttribute('x2', '376'); line.setAttribute('y2', String(y));
+    line.setAttribute('class', 'trend-grid-line');
+    svg.append(line);
+    const tick = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tick.setAttribute('x', '36'); tick.setAttribute('y', String(y + 4));
+    tick.setAttribute('text-anchor', 'end'); tick.setAttribute('class', 'trend-axis-label');
+    tick.textContent = formatValue(maxValue * i / 4);
+    svg.append(tick);
+  }
+
+  const barWidth = 25; const gap = 16; const startX = 52;
+  data.forEach((week, index) => {
+    const value = values[index];
+    const barHeight = value / maxValue * chartHeight;
+    const x = startX + index * (barWidth + gap);
+    const y = chartBottom - barHeight;
+    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bar.setAttribute('x', String(x)); bar.setAttribute('y', String(y));
+    bar.setAttribute('width', String(barWidth)); bar.setAttribute('height', String(barHeight));
+    bar.setAttribute('rx', '4'); bar.setAttribute('class', 'weekly-trend-bar');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = isIntentions
+      ? `Week of ${week.weekStart}: ${formatValue(value)} intention${value === 1 ? '' : 's'} started`
+      : `Week of ${week.weekStart}: ${formatValue(value)} average deepest navigation steps`;
+    bar.append(title);
+    svg.append(bar);
+
+    if (value > 0) {
+      const valueLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      valueLabel.setAttribute('x', String(x + barWidth / 2));
+      valueLabel.setAttribute('y', String(y - 6));
+      valueLabel.setAttribute('text-anchor', 'middle');
+      valueLabel.setAttribute('class', 'trend-value-label');
+      valueLabel.textContent = formatValue(value);
+      svg.append(valueLabel);
+    }
+
+    const weekLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    weekLabel.setAttribute('x', String(x + barWidth / 2));
+    weekLabel.setAttribute('y', String(chartBottom + 18));
+    weekLabel.setAttribute('text-anchor', 'middle');
+    weekLabel.setAttribute('class', 'trend-week-label');
+    weekLabel.textContent = week.weekLabel;
+    svg.append(weekLabel);
+  });
+}
+
 function renderDomainChart(domainData) {
   const svg = document.getElementById('domainChart');
   if (!svg) return;
@@ -646,7 +722,7 @@ async function loadStatsTab() {
       console.warn('Could not load dashboard stats:', response?.error);
       return;
     }
-    const { totalSessions, totalFocusTime, totalActiveTabTime, intentionalBranches, unlinkedPaths, interruptionsDismissed, averageBranchDepth, currentStreak, weeklyData, domainData, history, savedItems } = response;
+    const { totalSessions, totalFocusTime, totalActiveTabTime, intentionalBranches, unlinkedPaths, interruptionsDismissed, averageBranchDepth, currentStreak, weeklyData, weeklyTrendData, domainData, history, savedItems } = response;
     const totalSessionsEl = document.getElementById('totalSessions');
     const totalFocusTimeEl = document.getElementById('totalFocusTime');
     const currentStreakEl = document.getElementById('currentStreak');
@@ -670,6 +746,8 @@ async function loadStatsTab() {
     if (promptsDeclinedEl) promptsDeclinedEl.textContent = Number(interruptionsDismissed || 0);
     if (averageBranchDepthEl) averageBranchDepthEl.textContent = Number(averageBranchDepth || 0).toFixed(1);
     renderWeeklyChart(weeklyData);
+    renderWeeklyTrendChart('weeklyIntentionsChart', weeklyTrendData, 'intentionsStarted');
+    renderWeeklyTrendChart('weeklyPathChart', weeklyTrendData, 'averageDeepestPath');
     renderDomainChart(domainData);
     renderHistoryTable(history);
     renderSavedItems(savedItems, lastSettings?.strictMode === true ? Number(response.agedSavedCount) || 0 : 0);
@@ -771,4 +849,3 @@ document.addEventListener('visibilitychange', () => { updatePageVisibility(); sc
 updatePageVisibility();
 switchTab('map');
 renderSafely();
-

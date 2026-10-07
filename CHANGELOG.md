@@ -6,6 +6,7 @@ All notable Intent Grove changes are documented here.
 
 ### Changed
 
+- Added eight-week local charts for intentions started and average deepest navigation path, without inferring whether browsing served an intention.
 - Rewrote the New Tab introduction and four tour captions in plain language to describe navigation distance and elapsed time as reflection signals—not a test, relevance judgment, or score. Clarified that only the optional personal note stays local while planting also sends the intention to the chosen search provider.
 - Replaced test-only labels in the companion walkthrough capture with realistic example research pages, and made the Brave footer tip appear only when Brave identifies itself.
 - Removed stale README/store wording that described the retired five-step sample demo as current; corrected control-character damage in code excerpts in the retained historical security review without changing its findings.

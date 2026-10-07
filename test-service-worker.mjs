@@ -464,8 +464,33 @@ try {
     '2026-09-11', '2026-09-12', '2026-09-13', '2026-09-14',
     '2026-09-15', '2026-09-16', '2026-09-17'
   ], 'weekly statistics must contain seven distinct consecutive UTC dates');
+  assert.equal(emptyStats.weeklyTrendData.length, 8, 'intention trends must contain eight consecutive UTC weeks');
+  assert.equal(emptyStats.weeklyTrendData[0].weekStart, '2026-07-27');
+  assert.equal(emptyStats.weeklyTrendData.at(-1).weekStart, '2026-09-14');
+  assert.ok(emptyStats.weeklyTrendData.every((week) => week.intentionsStarted === 0 && week.averageDeepestPath === 0));
   assert.equal(emptyStats.currentStreak, 0);
 
+  const trendSession = (id, startedAt, depths) => ({
+    id, mission: id, status: 'completed', startedAt, endedAt: startedAt + 60000,
+    origin: { url: 'https://example.com/' }, events: [],
+    nodes: depths.map((depth, index) => ({ id: `${id}-node-${index}`, url: `https://example.com/${index}`, depth, firstSeenAt: startedAt + index * 1000 }))
+  });
+  await send({ type: 'IMPORT_DATA', payload: { data: { sessions: [
+    trendSession('trend-current-a', Date.parse('2026-09-15T10:00:00Z'), [0, 2, 3]),
+    trendSession('trend-current-b', Date.parse('2026-09-16T10:00:00Z'), [0, 1]),
+    trendSession('trend-previous', Date.parse('2026-09-10T10:00:00Z'), [0, 5])
+  ] } } });
+  const trendStats = await send({ type: 'GET_DASHBOARD_STATS' });
+  assert.deepEqual(
+    trendStats.weeklyTrendData.slice(-2).map(({ weekStart, intentionsStarted, averageDeepestPath }) => ({ weekStart, intentionsStarted, averageDeepestPath })),
+    [
+      { weekStart: '2026-09-07', intentionsStarted: 1, averageDeepestPath: 5 },
+      { weekStart: '2026-09-14', intentionsStarted: 2, averageDeepestPath: 2 }
+    ],
+    'weekly trends must count intentions by start date and average the deepest navigation step across sessions'
+  );
+
+  await send({ type: 'CLEAR_DATA' });
   const overnight = {
     id: 'calendar_overnight', mission: 'Read across midnight', status: 'completed',
     startedAt: Date.parse('2026-09-16T23:30:00Z'),
