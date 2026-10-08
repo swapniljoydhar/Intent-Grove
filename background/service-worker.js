@@ -951,9 +951,7 @@ function formatHistoryDomain(url) {
 // Optional path reflection: count only observable tree shape and recorded
 // navigation signals. The response intentionally contains no mission, title,
 // domain, URL, or individual-session data.
-async function getPathPatternAnalysis() {
-  const state = await loadState();
-  const now = Date.now();
+function summarizePathPatterns(sessions, now, completedOnly = false) {
   const currentDate = new Date(now);
   const currentWeekStart = Date.UTC(
     currentDate.getUTCFullYear(), currentDate.getUTCMonth(),
@@ -961,13 +959,14 @@ async function getPathPatternAnalysis() {
   );
   const firstWeekStart = currentWeekStart - 7 * 7 * DAY_MS;
   const windowEndExclusive = currentWeekStart + 7 * DAY_MS;
-  const sessions = state.sessions.filter((session) =>
+  const recentSessions = sessions.filter((session) =>
     Number.isFinite(session.startedAt) && session.startedAt >= firstWeekStart &&
-    session.startedAt <= now && session.startedAt < windowEndExclusive
+    session.startedAt <= now && session.startedAt < windowEndExclusive &&
+    (!completedOnly || session.status === 'completed')
   );
   const patterns = { branching: 0, straightThrough: 0, searchRefining: 0, revisiting: 0 };
 
-  for (const session of sessions) {
+  for (const session of recentSessions) {
     const nodes = Array.isArray(session.nodes) ? session.nodes : [];
     const nodeIds = new Set(nodes.map((node) => node.id));
     const childCounts = new Map();
@@ -992,9 +991,36 @@ async function getPathPatternAnalysis() {
   return {
     windowStart: new Date(firstWeekStart).toISOString().slice(0, 10),
     windowEnd: new Date(windowEndExclusive - DAY_MS).toISOString().slice(0, 10),
-    sampleSize: sessions.length,
+    sampleSize: recentSessions.length,
     patterns
   };
+}
+
+async function getPathPatternAnalysis() {
+  const state = await loadState();
+  return summarizePathPatterns(state.sessions, Date.now());
+}
+
+// Show a gentle note only after an explicit opt-in, with a useful completed
+// sample and a repeated pattern. The serialized mutation makes the rolling
+// seven-day limit atomic even when multiple dashboard tabs request it at once.
+async function getPathPatternReminder() {
+  const now = Date.now();
+  return mutate((state) => {
+    if (!normalizeSettings(state.settings).pathPatternRemindersEnabled) return NO_CHANGE;
+    const lastShownAt = Number.isFinite(state.pathPatternReminderLastShownAt)
+      ? state.pathPatternReminderLastShownAt : 0;
+    if (now - lastShownAt < 7 * DAY_MS) return NO_CHANGE;
+
+    const summary = summarizePathPatterns(state.sessions, now, true);
+    if (summary.sampleSize < 4) return NO_CHANGE;
+    const [patternKey, matchCount] = Object.entries(summary.patterns)
+      .reduce((best, entry) => entry[1] > best[1] ? entry : best);
+    if (matchCount < 3 || matchCount / summary.sampleSize < 0.6) return NO_CHANGE;
+
+    state.pathPatternReminderLastShownAt = now;
+    return { patternKey, matchCount, sampleSize: summary.sampleSize };
+  });
 }
 
 // Dashboard statistics aggregation
@@ -1629,6 +1655,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case 'CLEAR_DATA': return isExtensionPageSender(sender) ? (clearRuntimeTracking(), replaceState(emptyState())) : null;
       case 'GET_DASHBOARD_STATS': return isExtensionPageSender(sender) ? getDashboardStats() : null;
       case 'GET_PATH_PATTERN_ANALYSIS': return isExtensionPageSender(sender) ? getPathPatternAnalysis() : null;
+      case 'GET_PATH_PATTERN_REMINDER': return isExtensionPageSender(sender) ? getPathPatternReminder() : null;
       case 'REMOVE_SAVED_ITEM': return isExtensionPageSender(sender) && safeId(message.id) ? removeSavedItem(message.id) : null;
       case 'EXPORT_DATA': return isExtensionPageSender(sender) ? exportAllData() : null;
       case 'IMPORT_DATA': return isExtensionPageSender(sender) && isRecord(message.payload) ? importAllData(message.payload) : null;
@@ -1690,6 +1717,7 @@ const SCHEMAS = {
   CLEAR_DATA: {},
   GET_DASHBOARD_STATS: {},
   GET_PATH_PATTERN_ANALYSIS: {},
+  GET_PATH_PATTERN_REMINDER: {},
   REMOVE_SAVED_ITEM: { id: 'string' },
   EXPORT_DATA: {},
   IMPORT_DATA: { payload: 'object' },

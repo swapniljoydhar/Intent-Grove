@@ -136,7 +136,7 @@ assert.equal(session().nodes.at(-1).state, 'interrupted', 'depth 5 should be int
 assert.equal(session().nodes.slice(0, -1).some((node) => node.tabIds?.includes(7)), false, 'a navigating tab should not remain attached to historical nodes');
 
 await send({ type: 'COMPOST', url: 'https://example.com/weapons', title: 'Weapons' }, { id: 11 });
-assert.equal(store.intentGroveState.schemaVersion, 4, 'state should use the current compact schema');
+assert.equal(store.intentGroveState.schemaVersion, 5, 'state should use the current compact schema');
 assert.equal('transitions' in session(), false, 'nodes should be the only branch relationship source');
 assert.equal(store.intentGroveState.compostItems.length, 1, 'compost should save one item');
 assert.equal(tabActions.some((action) => action[0] === 'remove' && action[1] === 7), false, 'compost must not close the current tab');
@@ -535,6 +535,55 @@ try {
     'requesting pattern analysis must not modify or persist browsing history');
 
   await send({ type: 'CLEAR_DATA' });
+  assert.equal(await send({ type: 'GET_PATH_PATTERN_REMINDER' }), null,
+    'path reminders are off by default');
+  await send({ type: 'UPDATE_SETTINGS', settings: { pathPatternRemindersEnabled: true } });
+  const reminderNow = Date.now();
+  const reminderBranchNodes = (id) => [
+    patternNode(`${id}-root`, null, 0), patternNode(`${id}-left`, `${id}-root`, 1),
+    patternNode(`${id}-right`, `${id}-root`, 1)
+  ];
+  const reminderStraightNodes = (id) => [
+    patternNode(`${id}-root`, null, 0), patternNode(`${id}-next`, `${id}-root`, 1),
+    patternNode(`${id}-last`, `${id}-next`, 2)
+  ];
+  const reminderForks = Array.from({ length: 3 }, (_, index) => {
+    const id = `reminder-fork-${index}`;
+    return patternSession(id, reminderNow - (index + 1) * 60000, reminderBranchNodes(id));
+  });
+  await send({ type: 'IMPORT_DATA', payload: { data: { sessions: reminderForks } } });
+  assert.equal(await send({ type: 'GET_PATH_PATTERN_REMINDER' }), null,
+    'fewer than four completed gardens must not prompt');
+
+  const moreReminderSessions = [
+    ...Array.from({ length: 2 }, (_, index) => {
+      const id = `reminder-straight-${index}`;
+      return patternSession(id, reminderNow - (index + 4) * 60000, reminderStraightNodes(id));
+    }),
+    { ...patternSession('reminder-in-progress', reminderNow - 60000, reminderBranchNodes('reminder-in-progress')), status: 'active' }
+  ];
+  await send({ type: 'IMPORT_DATA', payload: { data: { sessions: moreReminderSessions } } });
+  const reminderResponses = await Promise.all([
+    send({ type: 'GET_PATH_PATTERN_REMINDER' }),
+    send({ type: 'GET_PATH_PATTERN_REMINDER' })
+  ]);
+  assert.equal(reminderResponses.filter(Boolean).length, 1,
+    'concurrent dashboard visits must not produce duplicate reminders');
+  const reminder = reminderResponses.find(Boolean);
+  assert.equal(reminder.patternKey, 'branching');
+  assert.equal(reminder.matchCount, 3);
+  assert.equal(reminder.sampleSize, 5, 'in-progress gardens must not inflate the completed sample');
+  assert.doesNotMatch(JSON.stringify(reminder), /reminder-fork|pattern\.example|private\.example|https?:/,
+    'the reminder must contain aggregate counts only');
+  assert.equal(await send({ type: 'GET_PATH_PATTERN_REMINDER' }), null,
+    'the same pattern cannot prompt again inside the seven-day cooldown');
+  assert.ok((await send({ type: 'GET_SNAPSHOT' })).state.pathPatternReminderLastShownAt > 0,
+    'a delivered reminder must persist its local cooldown');
+
+  await send({ type: 'CLEAR_DATA' });
+  const clearedReminderState = (await send({ type: 'GET_SNAPSHOT' })).state;
+  assert.equal(clearedReminderState.pathPatternReminderLastShownAt, 0, 'clear-data must reset reminder cadence');
+  assert.equal(clearedReminderState.settings.pathPatternRemindersEnabled, false, 'clear-data must return reminders to opt-out');
   const overnight = {
     id: 'calendar_overnight', mission: 'Read across midnight', status: 'completed',
     startedAt: Date.parse('2026-09-16T23:30:00Z'),

@@ -67,7 +67,7 @@ English
 
 ### Screenshot Notes
 - Screenshot 1: The interactive Garden Map showing a branching botanical tree with healthy, long, and composted leaves.
-- Screenshot 2: The Insights & Stats tab displaying weekly activity and path-depth trends, an optional count-backed path-pattern reflection, recorded days in a row, and most recorded domains.
+- Screenshot 2: The Insights & Stats tab displaying weekly activity and path-depth trends, an optional count-backed path-pattern reflection and default-off in-page weekly note (not a browser notification), recorded days in a row, and most recorded domains.
 - Screenshot 3: The peaceful new-tab page inviting the user to plant their intention.
 - Screenshot 4: A normal webpage with the compact leaf chip resting quietly in the corner without obscuring page content.
 - Screenshot 5: The gentle choice sheet offering "Return to my mission", "Save this for later", "Start a new mission", or "Keep exploring".

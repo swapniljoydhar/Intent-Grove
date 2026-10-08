@@ -9,8 +9,16 @@
 .path-pattern-card p { margin: 0; color: #6b8068; font-size: 12px; line-height: 1.45; }
 .path-pattern-card .path-pattern-count { margin-top: 8px; color: #527154; font-weight: 700; }
 .path-pattern-caveat { margin: 12px 0 0; color: #8d9a87; font-size: 11px; line-height: 1.45; }
+.path-pattern-reminder[hidden] { display: none; }
+.path-pattern-reminder { margin: 0 0 15px; padding: 14px; border: 1px solid #d9e5d4; border-left: 4px solid #789b70; border-radius: 11px; background: #f3f7f0; }
+.path-pattern-reminder h3 { margin: 0 0 6px; color: #486a4a; font: 650 14px/1.3 ui-sans-serif, system-ui, sans-serif; }
+.path-pattern-reminder p { margin: 0; color: #536b52; font-size: 12px; line-height: 1.5; }
+.path-pattern-reminder-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
 [data-theme="dark"] .pattern-intro, [data-theme="dark"] .path-pattern-summary, [data-theme="dark"] .path-pattern-empty { color: #a3b3a3; }
 [data-theme="dark"] .path-pattern-card { border-color: #3d453d; background: #2a322a; }
 [data-theme="dark"] .path-pattern-card h3, [data-theme="dark"] .path-pattern-card .path-pattern-count { color: #c8d4c8; }
 [data-theme="dark"] .path-pattern-card p, [data-theme="dark"] .path-pattern-caveat { color: #a3b3a3; }
+[data-theme="dark"] .path-pattern-reminder { border-color: #465446; border-left-color: #8aaa80; background: #283228; }
+[data-theme="dark"] .path-pattern-reminder h3 { color: #c8d4c8; }
+[data-theme="dark"] .path-pattern-reminder p { color: #b4c4b1; }
 @media (max-width: 720px) { .path-pattern-list { grid-template-columns: 1fr; } }

@@ -212,8 +212,12 @@ await test('path-pattern summaries are limited to extension pages and return agg
   assert.equal(result.sampleSize, 0);
   assert.equal(Object.hasOwn(result, 'sessions'), false, 'analysis must not return individual browsing sessions');
   assert.equal(Object.hasOwn(result, 'domains'), false, 'analysis must not return domain data');
+  assert.equal(await send({ type: 'GET_PATH_PATTERN_REMINDER' }), null,
+    'the reminder stays off unless the user opts in and the pattern threshold is met');
   assert.equal(await send({ type: 'GET_PATH_PATTERN_ANALYSIS' }, { id: 77, url: 'https://host.example/page' }), null,
     'ordinary web pages must not request dashboard path-pattern summaries');
+  assert.equal(await send({ type: 'GET_PATH_PATTERN_REMINDER' }, { id: 77, url: 'https://host.example/page' }), null,
+    'ordinary web pages must not request dashboard path reminders');
 });
 
 console.log('test-worker-inputs.mjs: command + context-menu surfaces passed');
