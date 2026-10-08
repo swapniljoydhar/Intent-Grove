@@ -79,6 +79,9 @@ async function openDashboard(t, state = stateFor(), viewport = { width: 1440, he
           if (message.type === 'GET_ACTIVE_VIEW') return { session: null, settings: { growthAnimationTrigger: 'none' } };
           if (message.type === 'OBSERVE_PAGE') return null;
           if (message.type === 'SPA_NAVIGATION') return null;
+          if (message.type === 'GET_PATH_PATTERN_ANALYSIS') {
+            return structuredClone(state.pathPatternAnalysis || { windowStart: '2026-07-27', windowEnd: '2026-09-20', sampleSize: 0, patterns: {} });
+          }
           if (message.type === 'GET_DASHBOARD_STATS') {
             return { totalSessions: state.sessions.length, totalFocusTime: 0, currentStreak: 0,
               weeklyData: [], weeklyTrendData: state.weeklyTrendData || [], domainData: [], history: [], savedItems: [] };
@@ -481,6 +484,54 @@ test('weekly intention charts explain when no sessions fall in the displayed wee
   assert.equal(await page.locator('#weeklyIntentionsChart .weekly-trend-bar').count(), 0);
   assert.equal(await page.locator('#weeklyIntentionsChart .trend-empty-state').textContent(), 'No intentions started in these eight weeks.');
   assert.equal(await page.locator('#weeklyPathChart .trend-empty-state').textContent(), 'No intentions started in these eight weeks.');
+});
+
+test('path patterns are generated only on request and present as overlapping observed-path signals', async t => {
+  const state = stateFor();
+  state.pathPatternAnalysis = {
+    windowStart: '2026-07-27', windowEnd: '2026-09-20', sampleSize: 5,
+    patterns: { branching: 3, straightThrough: 2, searchRefining: 1, revisiting: 2 }
+  };
+  const page = await openDashboard(t, state);
+  await page.locator('[data-tab="stats"]').click();
+  assert.equal(await page.locator('#path-pattern-results').isHidden(), true);
+  assert.equal(await page.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length), 0,
+    'opening Insights & Stats must not generate a pattern classification automatically');
+
+  await page.locator('#analyze-path-patterns').click();
+  await page.waitForFunction(() => document.querySelector('#path-pattern-results').innerText.includes('This summary uses 5 saved gardens'));
+  const result = page.locator('#path-pattern-results');
+  const text = await result.innerText();
+  for (const label of ['Branching paths', 'Straight-through paths', 'Search-refining paths', 'Revisiting paths']) assert.match(text, new RegExp(label));
+  assert.match(text, /3 of 5 saved gardens/);
+  assert.match(text, /Patterns can overlap/);
+  assert.match(text, /not a psychological profile, diagnosis, score/);
+  assert.equal(await page.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length), 1);
+
+  const lightCard = await result.locator('.path-pattern-card').first().evaluate(card => getComputedStyle(card).backgroundColor);
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+  const darkCard = await result.locator('.path-pattern-card').first().evaluate(card => getComputedStyle(card).backgroundColor);
+  assert.notEqual(darkCard, lightCard, 'pattern cards should respond to the selected dark theme');
+
+  const mobilePage = await openDashboard(t, state, { width: 390, height: 844 });
+  await mobilePage.locator('[data-tab="stats"]').click();
+  await mobilePage.locator('#analyze-path-patterns').click();
+  await mobilePage.waitForFunction(() => document.querySelector('#path-pattern-results').innerText.includes('This summary uses 5 saved gardens'));
+  const cardRightEdge = await mobilePage.locator('#path-pattern-results .path-pattern-card').first().evaluate(card => card.getBoundingClientRect().right);
+  assert.ok(cardRightEdge <= 390, `path-pattern cards must fit a 390px viewport (right edge ${cardRightEdge})`);
+
+  await page.locator('#analyze-path-patterns').click();
+  await page.waitForFunction(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length === 2);
+});
+
+test('on-request path analysis gives a calm empty-history state', async t => {
+  const page = await openDashboard(t);
+  await page.locator('[data-tab="stats"]').click();
+  assert.equal(await page.locator('#path-pattern-results').isHidden(), true);
+  await page.locator('#analyze-path-patterns').click();
+  await page.waitForFunction(() => document.querySelector('#path-pattern-results').innerText.includes('No saved gardens started'));
+  assert.match(await page.locator('#path-pattern-results').innerText(), /eight-week window/i);
+  assert.equal(await page.locator('#path-pattern-results .path-pattern-card').count(), 0);
 });
 
 test('young trees have a filled cartoon crown, a wooden trunk, and selectable pages', async t => {

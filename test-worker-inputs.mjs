@@ -205,4 +205,15 @@ await test('new settings keys survive hostile UPDATE_SETTINGS payloads', async (
   assert.equal(snap.settings.ramGuardLevel, 3, 'a non-numeric sensitivity falls back to the default');
 });
 
+await test('path-pattern summaries are limited to extension pages and return aggregates only', async () => {
+  await send({ type: 'CLEAR_DATA' });
+  const result = await send({ type: 'GET_PATH_PATTERN_ANALYSIS' });
+  assert.deepEqual(result.patterns, { branching: 0, straightThrough: 0, searchRefining: 0, revisiting: 0 });
+  assert.equal(result.sampleSize, 0);
+  assert.equal(Object.hasOwn(result, 'sessions'), false, 'analysis must not return individual browsing sessions');
+  assert.equal(Object.hasOwn(result, 'domains'), false, 'analysis must not return domain data');
+  assert.equal(await send({ type: 'GET_PATH_PATTERN_ANALYSIS' }, { id: 77, url: 'https://host.example/page' }), null,
+    'ordinary web pages must not request dashboard path-pattern summaries');
+});
+
 console.log('test-worker-inputs.mjs: command + context-menu surfaces passed');

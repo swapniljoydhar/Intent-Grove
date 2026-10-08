@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" data-theme="light">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Intent Grove — Your garden</title><script src="../shared/theme-bootstrap.js"></script><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="tree.css"><link rel="stylesheet" href="../shared/theme-controls.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Intent Grove — Your garden</title><script src="../shared/theme-bootstrap.js"></script><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="tree.css"><link rel="stylesheet" href="../shared/theme-controls.css"><link rel="stylesheet" href="path-patterns.css"></head>
 <body>
 <div class="garden-ambient" aria-hidden="true"><span class="garden-sun"></span><span class="garden-hill hill-one"></span><span class="garden-hill hill-two"></span><span class="garden-specks"></span></div>
 <main class="garden-shell">
@@ -55,6 +55,12 @@
         </div>
       </section>
       <p class="chart-help trend-retention-note">Only gardens still saved in local history are included, so older weeks may be incomplete.</p>
+      <section class="section path-pattern-section" aria-labelledby="path-pattern-heading">
+        <h2 id="path-pattern-heading">Optional path-pattern reflection</h2>
+        <p class="pattern-intro">When you choose to analyze, Intent Grove counts saved path forks, straight-through trails, explicit search refinements, and back/return events on this device from the last eight Monday–Sunday UTC weeks. It does not infer personality, mood, motives, health, or whether a page served your intention. A garden can show more than one pattern.</p>
+        <button class="btn btn-secondary" id="analyze-path-patterns" type="button">Show my path patterns</button>
+        <div id="path-pattern-results" class="path-pattern-results" aria-live="polite" aria-atomic="true" hidden></div>
+      </section>
       <div class="section">
         <h2>📌 Save for Later</h2>
         <div id="savedList">
