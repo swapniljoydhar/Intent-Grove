@@ -756,6 +756,63 @@ async function loadStatsTab() {
   }
 }
 
+function renderPathPatternAnalysis(analysis) {
+  const results = document.getElementById('path-pattern-results');
+  if (!results) return;
+  results.replaceChildren();
+  const sampleSize = Number.isInteger(analysis?.sampleSize) ? Math.max(0, analysis.sampleSize) : 0;
+  const summary = makeTextElement('p', sampleSize
+    ? `This summary uses ${sampleSize} saved ${sampleSize === 1 ? 'garden' : 'gardens'} started between ${analysis.windowStart} and ${analysis.windowEnd}.`
+    : 'No saved gardens started in this eight-week window.', 'path-pattern-summary');
+  results.append(summary);
+  if (!sampleSize) return;
+
+  const definitions = [
+    ['branching', 'Branching paths', 'At least one page had two or more traced child pages.'],
+    ['straightThrough', 'Straight-through paths', 'At least two pages followed the starting page, with no fork in the recorded tree.'],
+    ['searchRefining', 'Search-refining paths', 'At least two search-refinement events were recorded in a garden.'],
+    ['revisiting', 'Revisiting paths', 'At least two Back/Forward moves or returns to a previously tracked page were recorded.']
+  ];
+  const cards = document.createElement('ul');
+  cards.className = 'path-pattern-list';
+  for (const [key, title, description] of definitions) {
+    const rawCount = Number(analysis.patterns?.[key]);
+    const count = Number.isInteger(rawCount) ? Math.max(0, Math.min(sampleSize, rawCount)) : 0;
+    if (!count) continue;
+    const card = document.createElement('li');
+    card.className = 'path-pattern-card';
+    card.append(makeTextElement('h3', title));
+    card.append(makeTextElement('p', description));
+    card.append(makeTextElement('p', `${count} of ${sampleSize} saved ${sampleSize === 1 ? 'garden' : 'gardens'}`, 'path-pattern-count'));
+    cards.append(card);
+  }
+  if (cards.childElementCount) {
+    results.append(cards);
+    results.append(makeTextElement('p', 'Patterns can overlap. These labels describe recorded paths, not people; they are not a psychological profile, diagnosis, score, or measure of well-being.', 'path-pattern-caveat'));
+  } else {
+    results.append(makeTextElement('p', 'No pattern met its simple path rule in these saved gardens. That is not a score or a negative result.', 'path-pattern-empty'));
+  }
+}
+
+async function analyzePathPatterns() {
+  const button = document.getElementById('analyze-path-patterns');
+  const results = document.getElementById('path-pattern-results');
+  if (!button || !results) return;
+  button.disabled = true;
+  results.hidden = false;
+  results.replaceChildren(makeTextElement('p', 'Summarizing saved path signals on this device…', 'path-pattern-summary'));
+  try {
+    const analysis = await message('GET_PATH_PATTERN_ANALYSIS');
+    if (!analysis || analysis.error) throw new Error(analysis?.error || 'Path-pattern analysis was unavailable');
+    renderPathPatternAnalysis(analysis);
+  } catch (error) {
+    logError(error, { category: ERROR_CATEGORIES.MESSAGING, function: 'analyzePathPatterns' });
+    results.replaceChildren(makeTextElement('p', 'Path patterns could not be read right now. Your saved history was not changed.', 'path-pattern-empty'));
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function exportData() {
   try {
     const response = await message('EXPORT_DATA');
@@ -818,6 +875,8 @@ mountThemeToggle();
 
 const exportBtn = document.getElementById('exportData');
 if (exportBtn) exportBtn.addEventListener('click', wrapWithErrorBoundary(exportData, { category: ERROR_CATEGORIES.MESSAGING, function: 'exportData.click', swallow: true }));
+const pathPatternButton = document.getElementById('analyze-path-patterns');
+if (pathPatternButton) pathPatternButton.addEventListener('click', wrapWithErrorBoundary(analyzePathPatterns, { category: ERROR_CATEGORIES.MESSAGING, function: 'analyzePathPatterns.click', swallow: true }));
 
 const importBtn = document.getElementById('importData');
 const importInput = document.getElementById('importFile');

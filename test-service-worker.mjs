@@ -490,6 +490,50 @@ try {
     'weekly trends must count intentions by start date and average the deepest navigation step across sessions'
   );
 
+  const patternNode = (id, parentId, depth, navigationKind = 'link') => ({
+    id, parentId, depth, navigationKind, url: `https://pattern.example/${id}`, title: id,
+    firstSeenAt: Date.parse('2026-08-01T10:00:00Z')
+  });
+  const patternSession = (id, startedAt, nodes, events = []) => ({
+    id, mission: `private mission ${id}`, status: 'completed', startedAt, endedAt: startedAt + 60000,
+    origin: { url: `https://private.example/${id}` }, nodes, events
+  });
+  const weekSessions = [
+    patternSession('forked', Date.parse('2026-08-01T10:00:00Z'), [
+      patternNode('fork-root', null, 0), patternNode('fork-a', 'fork-root', 1),
+      patternNode('fork-b', 'fork-root', 1), patternNode('fork-c', 'fork-a', 2)
+    ]),
+    patternSession('straight', Date.parse('2026-08-02T10:00:00Z'), [
+      patternNode('straight-root', null, 0), patternNode('straight-a', 'straight-root', 1),
+      patternNode('straight-b', 'straight-a', 2)
+    ]),
+    patternSession('search', Date.parse('2026-08-03T10:00:00Z'), [
+      patternNode('search-root', null, 0), patternNode('search-a', 'search-root', 1),
+      patternNode('search-b', 'search-a', 2), patternNode('search-c', 'search-b', 3)
+    ], [{ id: 'search-1', type: 'search_refinement', at: Date.parse('2026-08-03T10:01:00Z') },
+      { id: 'search-2', type: 'search_refinement', at: Date.parse('2026-08-03T10:02:00Z') }]),
+    patternSession('returning', Date.parse('2026-08-04T10:00:00Z'), [
+      patternNode('return-root', null, 0), patternNode('return-a', 'return-root', 1),
+      patternNode('return-b', 'return-a', 2)
+    ], [{ id: 'back', type: 'back_forward', at: Date.parse('2026-08-04T10:01:00Z') },
+      { id: 'return', type: 'return_to_path', at: Date.parse('2026-08-04T10:02:00Z') }]),
+    patternSession('outside-window', Date.parse('2026-07-26T10:00:00Z'), [
+      patternNode('old-root', null, 0), patternNode('old-a', 'old-root', 1), patternNode('old-b', 'old-root', 1)
+    ])
+  ];
+  await send({ type: 'CLEAR_DATA' });
+  await send({ type: 'IMPORT_DATA', payload: { data: { sessions: weekSessions } } });
+  const stateBeforeAnalysis = JSON.stringify((await send({ type: 'GET_SNAPSHOT' })).state);
+  const patternAnalysis = await send({ type: 'GET_PATH_PATTERN_ANALYSIS' });
+  assert.deepEqual(patternAnalysis, {
+    windowStart: '2026-07-27', windowEnd: '2026-09-20', sampleSize: 4,
+    patterns: { branching: 1, straightThrough: 3, searchRefining: 1, revisiting: 1 }
+  }, 'the analysis should count the stated observable path rules within the most recent eight UTC weeks');
+  assert.doesNotMatch(JSON.stringify(patternAnalysis), /private mission|pattern\.example|private\.example|fork-root|search-a|return-root/,
+    'the opt-in result must not expose mission text, page URLs, or per-session identifiers');
+  assert.equal(JSON.stringify((await send({ type: 'GET_SNAPSHOT' })).state), stateBeforeAnalysis,
+    'requesting pattern analysis must not modify or persist browsing history');
+
   await send({ type: 'CLEAR_DATA' });
   const overnight = {
     id: 'calendar_overnight', mission: 'Read across midnight', status: 'completed',

@@ -948,6 +948,55 @@ function formatHistoryDomain(url) {
   }
 }
 
+// Optional path reflection: count only observable tree shape and recorded
+// navigation signals. The response intentionally contains no mission, title,
+// domain, URL, or individual-session data.
+async function getPathPatternAnalysis() {
+  const state = await loadState();
+  const now = Date.now();
+  const currentDate = new Date(now);
+  const currentWeekStart = Date.UTC(
+    currentDate.getUTCFullYear(), currentDate.getUTCMonth(),
+    currentDate.getUTCDate() - ((currentDate.getUTCDay() + 6) % 7)
+  );
+  const firstWeekStart = currentWeekStart - 7 * 7 * DAY_MS;
+  const windowEndExclusive = currentWeekStart + 7 * DAY_MS;
+  const sessions = state.sessions.filter((session) =>
+    Number.isFinite(session.startedAt) && session.startedAt >= firstWeekStart &&
+    session.startedAt <= now && session.startedAt < windowEndExclusive
+  );
+  const patterns = { branching: 0, straightThrough: 0, searchRefining: 0, revisiting: 0 };
+
+  for (const session of sessions) {
+    const nodes = Array.isArray(session.nodes) ? session.nodes : [];
+    const nodeIds = new Set(nodes.map((node) => node.id));
+    const childCounts = new Map();
+    for (const node of nodes) {
+      if (node.parentId && nodeIds.has(node.parentId)) {
+        childCounts.set(node.parentId, (childCounts.get(node.parentId) || 0) + 1);
+      }
+    }
+    const hasFork = [...childCounts.values()].some((count) => count >= 2);
+    const followedPages = nodes.filter((node) => Number(node.depth) > 0);
+    if (hasFork) patterns.branching++;
+    if (followedPages.length >= 2 && !hasFork) patterns.straightThrough++;
+
+    const events = Array.isArray(session.events) ? session.events : [];
+    const searchRefinements = events.filter((event) => event.type === 'search_refinement').length;
+    if (searchRefinements >= 2) patterns.searchRefining++;
+
+    const returns = events.filter((event) => event.type === 'back_forward' || event.type === 'return_to_path').length;
+    if (returns >= 2) patterns.revisiting++;
+  }
+
+  return {
+    windowStart: new Date(firstWeekStart).toISOString().slice(0, 10),
+    windowEnd: new Date(windowEndExclusive - DAY_MS).toISOString().slice(0, 10),
+    sampleSize: sessions.length,
+    patterns
+  };
+}
+
 // Dashboard statistics aggregation
 async function getDashboardStats() {
   const state = await loadState();
@@ -1579,6 +1628,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case 'FORGET_SITE': return isExtensionPageSender(sender) && typeof message.hostname === 'string' ? forgetSite(message.hostname) : null;
       case 'CLEAR_DATA': return isExtensionPageSender(sender) ? (clearRuntimeTracking(), replaceState(emptyState())) : null;
       case 'GET_DASHBOARD_STATS': return isExtensionPageSender(sender) ? getDashboardStats() : null;
+      case 'GET_PATH_PATTERN_ANALYSIS': return isExtensionPageSender(sender) ? getPathPatternAnalysis() : null;
       case 'REMOVE_SAVED_ITEM': return isExtensionPageSender(sender) && safeId(message.id) ? removeSavedItem(message.id) : null;
       case 'EXPORT_DATA': return isExtensionPageSender(sender) ? exportAllData() : null;
       case 'IMPORT_DATA': return isExtensionPageSender(sender) && isRecord(message.payload) ? importAllData(message.payload) : null;
@@ -1639,6 +1689,7 @@ const SCHEMAS = {
   FORGET_SITE: { hostname: 'string' },
   CLEAR_DATA: {},
   GET_DASHBOARD_STATS: {},
+  GET_PATH_PATTERN_ANALYSIS: {},
   REMOVE_SAVED_ITEM: { id: 'string' },
   EXPORT_DATA: {},
   IMPORT_DATA: { payload: 'object' },
