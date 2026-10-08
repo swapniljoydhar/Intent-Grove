@@ -7,6 +7,7 @@ All notable Intent Grove changes are documented here.
 ### Changed
 
 - Added an on-demand, local summary of branching, straight-through, search-refining, and revisiting paths across the last eight UTC weeks, with transparent counts and no personality or health claims.
+- Added a default-off, local path-reflection note that appears only when Insights & Stats is opened, at most once every seven days, when at least four completed gardens are available and one pattern appears in at least three gardens and 60% of the sample. It offers Review and Not now, without requesting browser-notification permission.
 - Added eight-week local charts for intentions started and average deepest navigation path, without inferring whether browsing served an intention.
 - Rewrote the New Tab introduction and four tour captions in plain language to describe navigation distance and elapsed time as reflection signals—not a test, relevance judgment, or score. Clarified that only the optional personal note stays local while planting also sends the intention to the chosen search provider.
 - Replaced test-only labels in the companion walkthrough capture with realistic example research pages, and made the Brave footer tip appear only when Brave identifies itself.

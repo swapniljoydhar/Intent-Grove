@@ -23,7 +23,7 @@ async function message(type, payload = {}) {
     throw error; // Re-throw so caller can handle fallback
   }
 }
-const gentle = document.querySelector('#gentle'); const choice = document.querySelector('#choice'); const motion = document.querySelector('#motion'); const searchEngine = document.querySelector('#search-engine'); const excludedSites = document.querySelector('#excluded-sites'); const status = document.querySelector('#status'); const save = document.querySelector('#save'); const enableRewardsToggle = document.querySelector('#enable-rewards');
+const gentle = document.querySelector('#gentle'); const choice = document.querySelector('#choice'); const motion = document.querySelector('#motion'); const searchEngine = document.querySelector('#search-engine'); const excludedSites = document.querySelector('#excluded-sites'); const status = document.querySelector('#status'); const save = document.querySelector('#save'); const enableRewardsToggle = document.querySelector('#enable-rewards'); const pathPatternRemindersToggle = document.querySelector('#path-pattern-reminders-enabled');
 const strictToggle = document.querySelector('#strict-mode'); const ramGuardToggle = document.querySelector('#ram-guard'); const ramLevel = document.querySelector('#ram-level'); const ramLevelValue = document.querySelector('#ram-level-value');
 const ramSignalsEl = document.querySelector('#ram-signals');
 // Live guardian-signal readout: the same honest numbers the decision uses,
@@ -51,7 +51,7 @@ const presets = {
 // literal: if defaults ever change, reset must restore the true defaults
 // (the old copy would have silently restored a stale rhythm).
 const original = { ...DEFAULT_SETTINGS, excludedSites: [...DEFAULT_SETTINGS.excludedSites] }; let saved = { ...original }; let ready = false;
-function currentSettings() { return { gentleDepth: Number(gentle.value), choiceDepth: Number(choice.value), ambientMotion: motion.checked, growthAnimationTrigger: document.querySelector('input[name="growth-animation"]:checked')?.value || 'mission-origin', excludedSites: excludedSites.value.split(/\r?\n/).map((site) => site.trim().toLowerCase().replace(/^www\./, '')).filter(Boolean), searchEngine: searchEngine.value, enableRewards: enableRewardsToggle?.checked === true, strictMode: strictToggle?.checked === true, ramGuard: ramGuardToggle?.checked !== false, ramGuardLevel: Number(ramLevel?.value) || 3 }; }
+function currentSettings() { return { gentleDepth: Number(gentle.value), choiceDepth: Number(choice.value), ambientMotion: motion.checked, growthAnimationTrigger: document.querySelector('input[name="growth-animation"]:checked')?.value || 'mission-origin', excludedSites: excludedSites.value.split(/\r?\n/).map((site) => site.trim().toLowerCase().replace(/^www\./, '')).filter(Boolean), searchEngine: searchEngine.value, enableRewards: enableRewardsToggle?.checked === true, strictMode: strictToggle?.checked === true, ramGuard: ramGuardToggle?.checked !== false, ramGuardLevel: Number(ramLevel?.value) || 3, pathPatternRemindersEnabled: pathPatternRemindersToggle?.checked === true }; }
 let saving = false;
 const reset = document.querySelector('#reset');
 function sameSettings(left, right) { return JSON.stringify(left) === JSON.stringify(right); }
@@ -63,6 +63,7 @@ function editableSettings(settings) {
     || !Number.isInteger(settings.gentleDepth) || !Number.isInteger(settings.choiceDepth)
     || typeof settings.ambientMotion !== 'boolean' || typeof settings.enableRewards !== 'boolean'
     || typeof settings.strictMode !== 'boolean' || typeof settings.ramGuard !== 'boolean' || !Number.isInteger(settings.ramGuardLevel)
+    || typeof settings.pathPatternRemindersEnabled !== 'boolean'
     || !Array.isArray(settings.excludedSites) || !settings.excludedSites.every(site => typeof site === 'string')) {
     throw new Error('Invalid settings acknowledgement');
   }
@@ -87,6 +88,7 @@ function applySettings(settings) {
   excludedSites.value = settings.excludedSites.join('\n');
   document.querySelector(`input[name="growth-animation"][value="${settings.growthAnimationTrigger}"]`).checked = true;
   if (enableRewardsToggle) enableRewardsToggle.checked = settings.enableRewards;
+  if (pathPatternRemindersToggle) pathPatternRemindersToggle.checked = settings.pathPatternRemindersEnabled;
   sync();
 }
 async function saveSettings(candidate) {
@@ -133,6 +135,7 @@ searchEngine.addEventListener('change', wrapWithErrorBoundary(markDirty, { categ
 excludedSites.addEventListener('input', wrapWithErrorBoundary(markDirty, { category: ERROR_CATEGORIES.UI_RENDER, function: 'excluded-sites.input', swallow: true }));
 document.querySelectorAll('input[name="growth-animation"]').forEach((radio) => radio.addEventListener('change', wrapWithErrorBoundary(markDirty, { category: ERROR_CATEGORIES.UI_RENDER, function: 'growth-animation.change', swallow: true })));
 if (enableRewardsToggle) enableRewardsToggle.addEventListener('change', wrapWithErrorBoundary(markDirty, { category: ERROR_CATEGORIES.UI_RENDER, function: 'enable-rewards.change', swallow: true }));
+if (pathPatternRemindersToggle) pathPatternRemindersToggle.addEventListener('change', wrapWithErrorBoundary(markDirty, { category: ERROR_CATEGORIES.UI_RENDER, function: 'path-pattern-reminders.change', swallow: true }));
 document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', wrapWithErrorBoundary(() => {
   const preset = presets[button.dataset.preset];
   if (!preset) return;
@@ -174,4 +177,3 @@ save.addEventListener('click', wrapWithErrorBoundary(() => persistSettings(), { 
 reset.addEventListener('click', wrapWithErrorBoundary(() => persistSettings(true), { category: ERROR_CATEGORIES.MESSAGING, function: 'reset.click', swallow: true }));
 markDirty();
 safeLoad();
-

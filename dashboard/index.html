@@ -57,7 +57,15 @@
       <p class="chart-help trend-retention-note">Only gardens still saved in local history are included, so older weeks may be incomplete.</p>
       <section class="section path-pattern-section" aria-labelledby="path-pattern-heading">
         <h2 id="path-pattern-heading">Optional path-pattern reflection</h2>
-        <p class="pattern-intro">When you choose to analyze, Intent Grove counts saved path forks, straight-through trails, explicit search refinements, and back/return events on this device from the last eight Monday–Sunday UTC weeks. It does not infer personality, mood, motives, health, or whether a page served your intention. A garden can show more than one pattern.</p>
+        <p class="pattern-intro">When you choose to analyze, Intent Grove counts saved path forks, straight-through trails, explicit search refinements, and back/return events on this device from the last eight Monday–Sunday UTC weeks. If you enable the reminder in Settings, these same aggregate signals are checked when you open Insights &amp; Stats; no browser notification is used. It does not infer personality, mood, motives, health, or whether a page served your intention. A garden can show more than one pattern.</p>
+        <aside id="path-pattern-reminder" class="path-pattern-reminder" role="status" aria-live="polite" aria-atomic="true" hidden>
+          <h3 id="path-pattern-reminder-heading">A small pattern to reflect on</h3>
+          <p id="path-pattern-reminder-copy"></p>
+          <div class="path-pattern-reminder-actions">
+            <button class="btn btn-secondary" id="review-path-patterns" type="button">Review paths</button>
+            <button class="btn btn-secondary" id="dismiss-path-pattern-reminder" type="button">Not now</button>
+          </div>
+        </aside>
         <button class="btn btn-secondary" id="analyze-path-patterns" type="button">Show my path patterns</button>
         <div id="path-pattern-results" class="path-pattern-results" aria-live="polite" aria-atomic="true" hidden></div>
       </section>

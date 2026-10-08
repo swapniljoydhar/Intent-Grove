@@ -3,9 +3,9 @@ import { logError, logWarning, logCritical, ERROR_CATEGORIES } from './error-tra
 
 export const STORAGE_KEY = 'intentGroveState';
 export const LEGACY_STORAGE_KEY = 'focusForestState';
-export const SCHEMA_VERSION = 4; // Incremented for reward system
+export const SCHEMA_VERSION = 5; // Added local path-reflection reminder state
 export const LIMITS = { SESSIONS: 12, NODES_PER_SESSION: 96, EVENTS_PER_SESSION: 72, COMPOST: 80, TITLE: 120, MISSION_NOTE: 280, URL: 1024 };
-export const DEFAULT_SETTINGS = { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3 };
+export const DEFAULT_SETTINGS = { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3, pathPatternRemindersEnabled: false };
 export const STORAGE_QUOTA_WARNING_THRESHOLD = 4 * 1024 * 1024; // 4MB warning threshold
 export const STORAGE_QUOTA_CRITICAL_THRESHOLD = 7 * 1024 * 1024; // 7MB critical threshold (Chrome's limit is ~8MB)
 
@@ -114,7 +114,8 @@ export function emptyState() {
     compostItems: [],
     settings: { ...DEFAULT_SETTINGS, excludedSites: [] },
     onboardingCompleted: false,
-    rewardHistory: [] // Track earned rewards with timestamps
+    rewardHistory: [], // Track earned rewards with timestamps
+    pathPatternReminderLastShownAt: 0 // Local, rolling cooldown; clear-data resets it.
   };
 }
 
@@ -362,7 +363,9 @@ export function normalizeState(value) {
     compostItems: Array.isArray(value.compostItems) ? value.compostItems.slice(0, LIMITS.COMPOST).map((item) => { const url = safeHttpUrl(item?.url); if (!url) return null; return { id: compactText(item?.id, 120), url, title: compactText(item?.title || url, LIMITS.TITLE), mission: compactText(item?.mission, 140), savedAt: Number.isFinite(item?.savedAt) ? item.savedAt : Date.now() }; }).filter((item) => item?.id && item.url) : [],
     rewardHistory: Array.isArray(value.rewardHistory) ? value.rewardHistory.filter((reward) => typeof reward?.rewardId === 'string' && Number.isFinite(reward.timestamp)).slice(-24).map((reward) => ({ rewardId: compactText(reward.rewardId, 40), timestamp: reward.timestamp })) : [],
     settings: normalizeSettings(value.settings, fallback.settings),
-    onboardingCompleted: Boolean(value.onboardingCompleted)
+    onboardingCompleted: Boolean(value.onboardingCompleted),
+    pathPatternReminderLastShownAt: Number.isFinite(value.pathPatternReminderLastShownAt)
+      ? Math.max(0, Math.floor(value.pathPatternReminderLastShownAt)) : 0
   };
 }
 
@@ -428,7 +431,7 @@ export function normalizeSettings(value, fallback = emptyState().settings) {
   const strictMode = source.strictMode === true;
   const ramGuard = source.ramGuard !== false;
   const ramGuardLevel = Math.max(1, Math.min(5, whole(source.ramGuardLevel, fallback.ramGuardLevel)));
-  return { gentleDepth, choiceDepth, ambientMotion: source.ambientMotion !== false, growthAnimationTrigger, excludedSites, searchEngine, enableRewards, strictMode, ramGuard, ramGuardLevel };
+  return { gentleDepth, choiceDepth, ambientMotion: source.ambientMotion !== false, growthAnimationTrigger, excludedSites, searchEngine, enableRewards, strictMode, ramGuard, ramGuardLevel, pathPatternRemindersEnabled: source.pathPatternRemindersEnabled === true };
 }
 
 let stateCache = null;
@@ -739,4 +742,3 @@ export function earnReward(state, tier, trigger) {
   
   return { ...reward, tier, trigger, note: rewardNote(trigger) };
 }
-

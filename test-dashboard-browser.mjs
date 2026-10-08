@@ -82,6 +82,11 @@ async function openDashboard(t, state = stateFor(), viewport = { width: 1440, he
           if (message.type === 'GET_PATH_PATTERN_ANALYSIS') {
             return structuredClone(state.pathPatternAnalysis || { windowStart: '2026-07-27', windowEnd: '2026-09-20', sampleSize: 0, patterns: {} });
           }
+          if (message.type === 'GET_PATH_PATTERN_REMINDER') {
+            const reminder = structuredClone(state.pathPatternReminder || null);
+            state.pathPatternReminder = null;
+            return reminder;
+          }
           if (message.type === 'GET_DASHBOARD_STATS') {
             return { totalSessions: state.sessions.length, totalFocusTime: 0, currentStreak: 0,
               weeklyData: [], weeklyTrendData: state.weeklyTrendData || [], domainData: [], history: [], savedItems: [] };
@@ -221,6 +226,23 @@ test('settings normalize successful acknowledgements without changing worker-own
   await page.locator('#search-engine').selectOption('brave');
   await page.locator('#search-engine').selectOption('default');
   assert.equal(await page.locator('#save').isDisabled(), true);
+  assert.deepEqual(consoleErrors, []);
+});
+
+test('weekly path reflection reminders are opt-in in Settings and reset to off', async t => {
+  const { page, consoleErrors } = await openSettings(t, { failUpdate: false });
+  const toggle = page.locator('#path-pattern-reminders-enabled');
+  assert.equal(await toggle.isChecked(), false, 'the new reminder must default off');
+  const reminderDescription = (await page.locator('label.toggle:has(#path-pattern-reminders-enabled)').innerText()).replace(/\s+/g, ' ');
+  assert.match(reminderDescription, /Off by default.*once every seven days.*60%.*notification permission/i);
+  await page.locator('label.toggle:has(#path-pattern-reminders-enabled) strong').click();
+  await page.locator('#save').click();
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'Your rhythm is tending the grove now.');
+  assert.equal((await page.evaluate(() => settingsCalls.find(call => call.type === 'UPDATE_SETTINGS').settings)).pathPatternRemindersEnabled, true);
+  assert.equal(await toggle.isChecked(), true);
+  await page.locator('#reset').click();
+  await page.waitForFunction(() => document.querySelector('#status').textContent === 'The original rhythm has returned.');
+  assert.equal(await toggle.isChecked(), false, 'reset must restore the default-off preference');
   assert.deepEqual(consoleErrors, []);
 });
 
@@ -522,6 +544,53 @@ test('path patterns are generated only on request and present as overlapping obs
 
   await page.locator('#analyze-path-patterns').click();
   await page.waitForFunction(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length === 2);
+});
+
+test('weekly path reminder is a quiet opt-in Stats note with Review and Not now actions', async t => {
+  const state = stateFor();
+  state.settings.pathPatternRemindersEnabled = true;
+  state.pathPatternReminder = { patternKey: 'branching', matchCount: 3, sampleSize: 5 };
+  state.pathPatternAnalysis = {
+    windowStart: '2026-07-27', windowEnd: '2026-09-20', sampleSize: 5,
+    patterns: { branching: 3, straightThrough: 2, searchRefining: 1, revisiting: 2 }
+  };
+  const page = await openDashboard(t, state);
+  const reminder = page.locator('#path-pattern-reminder');
+  assert.equal(await reminder.isHidden(), true, 'the note stays out of the initial Map view');
+  assert.equal(await page.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_REMINDER').length), 0);
+  await page.locator('[data-tab="stats"]').click();
+  await page.waitForFunction(() => !document.querySelector('#path-pattern-reminder').hidden);
+  assert.equal(await reminder.getAttribute('role'), 'status');
+  assert.match(await page.locator('#path-pattern-reminder-copy').innerText(), /Branching paths appeared in 3 of 5 completed gardens/);
+  assert.match(await page.locator('#path-pattern-reminder-copy').innerText(), /not relevance, attention/);
+  assert.equal(await page.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_REMINDER').length), 1);
+  assert.equal(await page.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length), 0,
+    'showing the note must not request the full, user-visible summary without a click');
+  assert.equal(Boolean(manifest.permissions?.includes('notifications')), false,
+    'the inline reminder must not add Chrome notification permission');
+
+  const lightBackground = await reminder.evaluate(card => getComputedStyle(card).backgroundColor);
+  await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+  const darkBackground = await reminder.evaluate(card => getComputedStyle(card).backgroundColor);
+  assert.notEqual(darkBackground, lightBackground, 'the note must remain legible in dark theme');
+  await page.locator('#review-path-patterns').click();
+  await page.waitForFunction(() => document.querySelector('#path-pattern-results').innerText.includes('This summary uses 5 saved gardens'));
+  assert.equal(await reminder.isHidden(), true);
+  assert.equal(await page.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length), 1);
+
+  const dismissPage = await openDashboard(t, state);
+  await dismissPage.locator('[data-tab="stats"]').click();
+  await dismissPage.waitForFunction(() => !document.querySelector('#path-pattern-reminder').hidden);
+  await dismissPage.locator('#dismiss-path-pattern-reminder').click();
+  assert.equal(await dismissPage.locator('#path-pattern-reminder').isHidden(), true,
+    'Not now should dismiss the note without opening analysis');
+  assert.equal(await dismissPage.evaluate(() => contentMessages.filter(message => message.type === 'GET_PATH_PATTERN_ANALYSIS').length), 0);
+
+  const mobilePage = await openDashboard(t, state, { width: 390, height: 844 });
+  await mobilePage.locator('[data-tab="stats"]').click();
+  await mobilePage.waitForFunction(() => !document.querySelector('#path-pattern-reminder').hidden);
+  const reminderRightEdge = await mobilePage.locator('#path-pattern-reminder').evaluate(card => card.getBoundingClientRect().right);
+  assert.ok(reminderRightEdge <= 390, `the note must fit a 390px viewport (right edge ${reminderRightEdge})`);
 });
 
 test('on-request path analysis gives a calm empty-history state', async t => {

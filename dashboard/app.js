@@ -412,7 +412,10 @@ function switchTab(tab) {
   });
   if (mapTab) { mapTab.classList.toggle('active', tab === 'map'); mapTab.hidden = tab !== 'map'; }
   if (statsTab) { statsTab.classList.toggle('active', tab === 'stats'); statsTab.hidden = tab !== 'stats'; }
-  if (tab === 'stats' && changed) loadStatsTab();
+  if (tab === 'stats' && changed) {
+    loadStatsTab();
+    loadPathPatternReminder();
+  }
 }
 const safeSwitchTab = wrapWithErrorBoundary(switchTab, { category: ERROR_CATEGORIES.UI_RENDER, function: 'switchTab', swallow: true });
 tabButtons.forEach(btn => btn.addEventListener('click', () => safeSwitchTab(btn.dataset.tab)));
@@ -813,6 +816,31 @@ async function analyzePathPatterns() {
   }
 }
 
+async function loadPathPatternReminder() {
+  const card = document.getElementById('path-pattern-reminder');
+  const copy = document.getElementById('path-pattern-reminder-copy');
+  if (!card || !copy) return;
+  card.hidden = true;
+  try {
+    const reminder = await message('GET_PATH_PATTERN_REMINDER');
+    const labels = {
+      branching: 'Branching paths',
+      straightThrough: 'Straight-through paths',
+      searchRefining: 'Search-refining paths',
+      revisiting: 'Revisiting paths'
+    };
+    const label = labels[reminder?.patternKey];
+    const matchCount = Number(reminder?.matchCount);
+    const sampleSize = Number(reminder?.sampleSize);
+    if (!label || !Number.isInteger(matchCount) || !Number.isInteger(sampleSize)
+      || sampleSize < 4 || matchCount < 3 || matchCount / sampleSize < 0.6) return;
+    copy.textContent = `${label} appeared in ${matchCount} of ${sampleSize} completed gardens in the last eight weeks. This describes recorded navigation, not relevance, attention, or whether a path served your intention.`;
+    card.hidden = false;
+  } catch (error) {
+    logError(error, { category: ERROR_CATEGORIES.MESSAGING, function: 'loadPathPatternReminder' });
+  }
+}
+
 async function exportData() {
   try {
     const response = await message('EXPORT_DATA');
@@ -877,6 +905,15 @@ const exportBtn = document.getElementById('exportData');
 if (exportBtn) exportBtn.addEventListener('click', wrapWithErrorBoundary(exportData, { category: ERROR_CATEGORIES.MESSAGING, function: 'exportData.click', swallow: true }));
 const pathPatternButton = document.getElementById('analyze-path-patterns');
 if (pathPatternButton) pathPatternButton.addEventListener('click', wrapWithErrorBoundary(analyzePathPatterns, { category: ERROR_CATEGORIES.MESSAGING, function: 'analyzePathPatterns.click', swallow: true }));
+const pathPatternReviewButton = document.getElementById('review-path-patterns');
+if (pathPatternReviewButton) pathPatternReviewButton.addEventListener('click', wrapWithErrorBoundary(async () => {
+  document.getElementById('path-pattern-reminder').hidden = true;
+  await analyzePathPatterns();
+}, { category: ERROR_CATEGORIES.MESSAGING, function: 'pathPatternReminder.review', swallow: true }));
+const pathPatternDismissButton = document.getElementById('dismiss-path-pattern-reminder');
+if (pathPatternDismissButton) pathPatternDismissButton.addEventListener('click', wrapWithErrorBoundary(() => {
+  document.getElementById('path-pattern-reminder').hidden = true;
+}, { category: ERROR_CATEGORIES.UI_RENDER, function: 'pathPatternReminder.dismiss', swallow: true }));
 
 const importBtn = document.getElementById('importData');
 const importInput = document.getElementById('importFile');

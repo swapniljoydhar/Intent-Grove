@@ -162,11 +162,11 @@ describe('shared/state.js core functions', () => {
   });
 
   it('normalizeSettings clamps and defaults', () => {
-    const base = { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3 };
+    const base = { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3, pathPatternRemindersEnabled: false };
     assert.deepStrictEqual(normalizeSettings(base), { ...base });
-    assert.deepStrictEqual(normalizeSettings({}), { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3 });
-    assert.deepStrictEqual(normalizeSettings({ gentleDepth: 1, choiceDepth: 1 }), { gentleDepth: 2, choiceDepth: 3, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3 });
-    assert.deepStrictEqual(normalizeSettings({ growthAnimationTrigger: 'invalid' }), { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3 });
+    assert.deepStrictEqual(normalizeSettings({}), { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3, pathPatternRemindersEnabled: false });
+    assert.deepStrictEqual(normalizeSettings({ gentleDepth: 1, choiceDepth: 1 }), { gentleDepth: 2, choiceDepth: 3, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3, pathPatternRemindersEnabled: false });
+    assert.deepStrictEqual(normalizeSettings({ growthAnimationTrigger: 'invalid' }), { gentleDepth: 4, choiceDepth: 5, ambientMotion: true, growthAnimationTrigger: 'mission-origin', excludedSites: [], searchEngine: 'default', enableRewards: false, strictMode: false, ramGuard: true, ramGuardLevel: 3, pathPatternRemindersEnabled: false });
     assert.equal(normalizeSettings({ searchEngine: 'brave' }).searchEngine, 'brave');
     assert.equal(normalizeSettings({ strictMode: true }).strictMode, true);
     assert.equal(normalizeSettings({ strictMode: 'yes' }).strictMode, false, 'strict mode requires an explicit true');
@@ -174,6 +174,8 @@ describe('shared/state.js core functions', () => {
     assert.equal(normalizeSettings({ ramGuard: 'no' }).ramGuard, true, 'only an explicit false opts out');
     assert.equal(normalizeSettings({ ramGuardLevel: 99 }).ramGuardLevel, 5, 'sensitivity clamps high');
     assert.equal(normalizeSettings({ ramGuardLevel: -3 }).ramGuardLevel, 1, 'sensitivity clamps low');
+    assert.equal(normalizeSettings({ pathPatternRemindersEnabled: true }).pathPatternRemindersEnabled, true);
+    assert.equal(normalizeSettings({ pathPatternRemindersEnabled: 'yes' }).pathPatternRemindersEnabled, false, 'reminders require explicit opt-in');
     // interventionsPaused was removed: it was written but never read anywhere.
     assert.equal(Object.hasOwn(normalizeSettings({ interventionsPaused: true }), 'interventionsPaused'), false);
     assert.equal(Object.hasOwn(emptyState().settings, 'interventionsPaused'), false);
@@ -374,7 +376,10 @@ describe('normalizeState migration and bounds', () => {
       activeSessionId: 's1'
     };
     const result = normalizeState(legacy);
-    assert.strictEqual(result.schemaVersion, 4);
+    assert.strictEqual(result.schemaVersion, 5);
+    assert.strictEqual(result.pathPatternReminderLastShownAt, 0, 'older state gets a fresh local cooldown');
+    assert.strictEqual(normalizeState({ pathPatternReminderLastShownAt: -10 }).pathPatternReminderLastShownAt, 0);
+    assert.strictEqual(normalizeState({ pathPatternReminderLastShownAt: 123.9 }).pathPatternReminderLastShownAt, 123);
     const node = result.sessions[0].nodes[0];
     assert.deepStrictEqual(node.tabIds, [7]);
     assert.ok(!('tabId' in node), 'legacy tabId should not survive normalization');
