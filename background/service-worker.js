@@ -1,6 +1,8 @@
 import { LIMITS, SCHEMA_VERSION, STORAGE_KEY, DEFAULT_NEW_TAB_URL, activeSession, clearLegacyState, clearStateCache, compactText, driftStats, emptyState, getDepthState, isBrowserNewTabUrl, isExtensionNewTabUrl, isPlaceholderOriginUrl, isSearchUrl, loadState, loadStateForWrite, makeId, normalizeSettings, safeHttpUrl, safeSessionUrl, saveState, checkStorageQuota, compactStateIfNeeded, normalizeState, earnReward } from '../shared/state.js';
 import { logError, logWarning, ERROR_CATEGORIES, wrapMutationWithErrorBoundary, wrapWithErrorBoundary } from '../shared/error-tracing.js';
 import { DAY_MS, SERVICE_WORKER, MEMORY_LIMITS, VALIDATION } from '../shared/constants.js';
+import { buildStudyExport, consentToStudy, getStudyStatus, recordStudyMetric, withdrawFromStudy } from '../shared/study.js';
+import { STUDY_CONFIG } from '../shared/study-config.js';
 
 const pendingBranches = new Map();
 const MAX_PENDING_BRANCHES = MEMORY_LIMITS.LRU_CACHE_SIZE;
@@ -676,6 +678,9 @@ async function createSession(mission, tab, rawNote = '', rawResponsePlan = 'deci
     } catch (error) {
       logError(error, { category: ERROR_CATEGORIES.STATE_MUTATION, component: 'service-worker', function: 'createSession.recordActiveTab' });
     }
+    if (result) await recordStudyMetric(STUDY_CONFIG, 'sessionsStarted', chrome.storage.local).catch((error) => {
+      logError(error, { category: ERROR_CATEGORIES.STORAGE, component: 'study-store', function: 'session-start' });
+    });
     return result;
   });
 }
@@ -1555,6 +1560,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
     switch (message.type) {
       case 'GET_SNAPSHOT': return isExtensionPageSender(sender) ? getSnapshot(safeId(message.sessionId) || null, Boolean(message.includeHistory)) : null;
+      case 'GET_STUDY_STATUS': return isExtensionPageSender(sender) ? getStudyStatus(STUDY_CONFIG, chrome.storage.local) : null;
+      case 'CONSENT_TO_STUDY': return isExtensionPageSender(sender) ? consentToStudy(STUDY_CONFIG, message.confirmed, message.eligible, chrome.storage.local) : null;
+      case 'STUDY_EXPORT_PREVIEW': return isExtensionPageSender(sender) ? buildStudyExport(STUDY_CONFIG, chrome.storage.local) : null;
+      case 'WITHDRAW_FROM_STUDY': return isExtensionPageSender(sender) ? withdrawFromStudy(chrome.storage.local) : null;
+      case 'STUDY_RECORD_METRIC': {
+        const contentMetrics = new Set(['choiceCardsShown', 'choiceCardsDismissed', 'choiceCardsActedOn']);
+        const dashboardMetrics = new Set(['reflectionNotesShown', 'reflectionNotesReviewed', 'reflectionNotesDismissed']);
+        const fromTrackedPage = Number.isInteger(tab?.id) && contentMetrics.has(message.metric);
+        const fromDashboard = isExtensionPageSender(sender) && /\/dashboard\/index\.html(?:[?#]|$)/.test(sender.url || '') && dashboardMetrics.has(message.metric);
+        return (fromTrackedPage || fromDashboard) ? recordStudyMetric(STUDY_CONFIG, message.metric, chrome.storage.local) : null;
+      }
       case 'GET_ACTIVE_VIEW': { await refreshSystemMemory(); return activeView(await loadState(), tab?.id); }
       case 'GET_CHIP_POS': return getChipPos(tab);
       case 'SET_CHIP_POS': return setChipPos(tab, message.x, message.y);
@@ -1652,7 +1668,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case 'PRUNE_NODE': return isExtensionPageSender(sender) && safeId(message.sessionId) && safeId(message.nodeId) ? pruneNode(message.sessionId, message.nodeId, Boolean(message.toCompost)) : null;
       case 'DELETE_SESSION': return isExtensionPageSender(sender) && safeId(message.sessionId) ? mutate((state) => { const before = state.sessions.length; state.sessions = state.sessions.filter((session) => session.id !== message.sessionId); if (state.activeSessionId === message.sessionId) { state.activeSessionId = null; clearRuntimeTracking(); } return before === state.sessions.length ? NO_CHANGE : state.sessions; }) : null;
       case 'FORGET_SITE': return isExtensionPageSender(sender) && typeof message.hostname === 'string' ? forgetSite(message.hostname) : null;
-      case 'CLEAR_DATA': return isExtensionPageSender(sender) ? (clearRuntimeTracking(), replaceState(emptyState())) : null;
+      case 'CLEAR_DATA': {
+        if (!isExtensionPageSender(sender)) return null;
+        clearRuntimeTracking();
+        await withdrawFromStudy(chrome.storage.local);
+        return replaceState(emptyState());
+      }
       case 'GET_DASHBOARD_STATS': return isExtensionPageSender(sender) ? getDashboardStats() : null;
       case 'GET_PATH_PATTERN_ANALYSIS': return isExtensionPageSender(sender) ? getPathPatternAnalysis() : null;
       case 'GET_PATH_PATTERN_REMINDER': return isExtensionPageSender(sender) ? getPathPatternReminder() : null;
@@ -1698,6 +1719,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 const SCHEMAS = {
   GET_SNAPSHOT: { sessionId: 'string?', includeHistory: 'boolean?' },
+  GET_STUDY_STATUS: {},
+  CONSENT_TO_STUDY: { confirmed: 'boolean', eligible: 'boolean' },
+  STUDY_EXPORT_PREVIEW: {},
+  WITHDRAW_FROM_STUDY: {},
+  STUDY_RECORD_METRIC: { metric: 'string' },
   GET_ACTIVE_VIEW: {},
   GET_CHIP_POS: {},
   SET_CHIP_POS: { x: 'number', y: 'number' },

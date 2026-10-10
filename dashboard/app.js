@@ -32,7 +32,7 @@ function pathReason(node) {
   if (node.navigationKind === 'manual' || node.relationshipConfidence === 'external') return 'This was an unlinked path you chose to explore.';
   return 'This branch followed a link from the page before it.';
 }
-function nodeDescription(node) { const state = node.state === 'pruned' ? 'pruned and kept in the trail' : node.state === 'composted' ? 'resting in compost' : node.depth === 0 ? 'mission root' : `${branchClass(node)} branch`; return `${(node.title || node.url || 'Untitled path').slice(0, 80)}, ${state}, ${confidenceLabel(node)}, depth ${node.depth}`; }
+function nodeDescription(node) { const state = node.state === 'pruned' ? 'pruned and kept in the trail' : node.state === 'composted' ? 'resting in compost' : node.depth === 0 ? 'intention root' : 'recorded path branch'; return `${(node.title || node.url || 'Untitled path').slice(0, 80)}, ${state}, ${confidenceLabel(node)}, depth ${node.depth}`; }
 function shortLabel(node) { const value = (node.title || node.url || 'Untitled path').replace(/^https?:\/\//, ''); return value.length > 20 ? `${value.slice(0, 19)}…` : value; }
 let lastTree = null;
 let lastTreeMode = null;
@@ -836,6 +836,7 @@ async function loadPathPatternReminder() {
       || sampleSize < 4 || matchCount < 3 || matchCount / sampleSize < 0.6) return;
     copy.textContent = `${label} appeared in ${matchCount} of ${sampleSize} completed gardens in the last eight weeks. This describes recorded navigation, not relevance, attention, or whether a path served your intention.`;
     card.hidden = false;
+    message('STUDY_RECORD_METRIC', { metric: 'reflectionNotesShown' }).catch(() => {});
   } catch (error) {
     logError(error, { category: ERROR_CATEGORIES.MESSAGING, function: 'loadPathPatternReminder' });
   }
@@ -908,11 +909,13 @@ if (pathPatternButton) pathPatternButton.addEventListener('click', wrapWithError
 const pathPatternReviewButton = document.getElementById('review-path-patterns');
 if (pathPatternReviewButton) pathPatternReviewButton.addEventListener('click', wrapWithErrorBoundary(async () => {
   document.getElementById('path-pattern-reminder').hidden = true;
+  message('STUDY_RECORD_METRIC', { metric: 'reflectionNotesReviewed' }).catch(() => {});
   await analyzePathPatterns();
 }, { category: ERROR_CATEGORIES.MESSAGING, function: 'pathPatternReminder.review', swallow: true }));
 const pathPatternDismissButton = document.getElementById('dismiss-path-pattern-reminder');
 if (pathPatternDismissButton) pathPatternDismissButton.addEventListener('click', wrapWithErrorBoundary(() => {
   document.getElementById('path-pattern-reminder').hidden = true;
+  message('STUDY_RECORD_METRIC', { metric: 'reflectionNotesDismissed' }).catch(() => {});
 }, { category: ERROR_CATEGORIES.UI_RENDER, function: 'pathPatternReminder.dismiss', swallow: true }));
 
 const importBtn = document.getElementById('importData');

@@ -625,6 +625,7 @@
       choiceCopy.append(driftEl);
     }
     choiceCard.hidden = false;
+    send('STUDY_RECORD_METRIC', { metric: 'choiceCardsShown' }).catch(() => {});
     shadow.querySelector('[data-action="dismiss"]').focus();
   }
 
@@ -709,6 +710,8 @@
   shadow.addEventListener('click', wrapWithErrorBoundary(async (event) => {
     if (!event.isTrusted) return;
     const action = event.target.closest('[data-action]')?.dataset.action;
+    if (action === 'dismiss') send('STUDY_RECORD_METRIC', { metric: 'choiceCardsDismissed' }).catch(() => {});
+    else if (['home', 'compost', 'mission', 'mission-here'].includes(action)) send('STUDY_RECORD_METRIC', { metric: 'choiceCardsActedOn' }).catch(() => {});
     if (action === 'home') { hideChoiceCard(); showForestFind((await send('GO_HOME'))?.reward); }
     else if (action === 'compost') { showForestFind((await send('COMPOST', { url: location.href, title: document.title }))?.reward); hideChoiceCard(); restorePageFocus(); }
     else if (action === 'mission') {
@@ -745,6 +748,7 @@
   shadow.addEventListener('keydown', wrapWithErrorBoundary((event) => {
     if (event.key === 'Escape' && !choiceCard.hidden) {
       hideChoiceCard();
+      send('STUDY_RECORD_METRIC', { metric: 'choiceCardsDismissed' }).catch(() => {});
       send('DISMISS_INTERVENTION', { url: location.href }).catch((error) => logError(error, { category: ERROR_CATEGORIES.MESSAGING, function: 'dismissIntervention' }));
       return;
     }

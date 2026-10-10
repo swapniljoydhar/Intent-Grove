@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node test-browser-runtime.mjs && node test-service-worker.mjs && node test-state.mjs && node test-error-tracing.mjs && node test-tree-layout.mjs && node test-security.mjs && node test-repository-integrity.mjs && node test-runtime-contracts.mjs && node test-preview.mjs && node test-regression-fixes.mjs && node test-audit-fixes.mjs && node test-worker-inputs.mjs && node test-ram-guard.mjs && node stress-service-worker.mjs",
+    "test": "node test-study.mjs && node test-browser-runtime.mjs && node test-service-worker.mjs && node test-state.mjs && node test-error-tracing.mjs && node test-tree-layout.mjs && node test-security.mjs && node test-repository-integrity.mjs && node test-runtime-contracts.mjs && node test-preview.mjs && node test-regression-fixes.mjs && node test-audit-fixes.mjs && node test-worker-inputs.mjs && node test-ram-guard.mjs && node stress-service-worker.mjs",
     "test:all": "npm test && npm run test:dashboard && npm run test:extension && npm run test:features",
     "test:sw": "node test-service-worker.mjs",
     "test:state": "node test-state.mjs",
@@ -21,11 +21,11 @@
     "test:extension": "node test-extension-load.mjs",
     "test:features": "node test-features-e2e.mjs",
     "test:inputs": "node test-worker-inputs.mjs",
-    "test:ram": "node test-ram-guard.mjs"
+    "test:ram": "node test-ram-guard.mjs",
+    "test:study": "node test-study.mjs"
   },
   "devDependencies": {
     "playwright": "^1.63.0"
   },
   "license": "GPL-3.0-or-later"
 }
-
