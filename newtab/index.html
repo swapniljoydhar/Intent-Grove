@@ -89,6 +89,7 @@
           Private garden
         </span>
       </div>
+      <details id="pin-help" class="pin-help" hidden><summary id="pin-state">Checking pin status</summary><p id="pin-explanation"></p></details>
       <button class="theme-toggle" type="button" data-theme-toggle><span aria-hidden="true" data-theme-icon>☾</span><span data-theme-label>Dark theme</span></button>
     </header>
     
@@ -103,10 +104,10 @@
         <p class="intro-eyebrow">INTENTIONAL BROWSING</p>
         <h2 id="main-heading" class="main-heading">
           What would you like<br/>
-          <em class="highlight-text">to spend time on today?</em>
+          <em class="highlight-text">to do today?</em>
         </h2>
         <p class="hero-description">
-          Write down what you hope to do, then browse freely. Intent Grove records the pages you move through and roughly how long the session lasts. It can invite you to pause, but it never blocks a page or decides whether a detour was useful. There is no score.
+          Set a loose intention, then browse freely. Intent Grove records the pages you visit and roughly how long the session lasts. It may invite a pause, but never blocks a page or scores you.
         </p>
       </div>
       
@@ -132,19 +133,21 @@
             </div>
           </div>
           <p id="input-hint" class="input-hint">Keep it flexible. This is a reference point for reflection, not a rule.</p>
+          <details class="optional-details"><summary>Add a note or choose a reminder plan <span class="optional-label">(optional)</span></summary>
           <label class="form-label note-label" for="mission-note">
             <span class="label-icon" aria-hidden="true">✦</span>
             Why does this matter today? <span class="optional-label">(optional)</span>
           </label>
           <textarea id="mission-note" maxlength="280" rows="2" placeholder="For example: I want to compare options before deciding."></textarea>
-          <p class="input-hint">Your personal note stays on this device; it is not sent to search providers or websites.</p>
+          <p class="input-hint">Your note stays on this device. It is not shared with search providers or websites.</p>
           <fieldset class="return-plan">
             <legend>If I reach a reminder point, I plan to… <span class="optional-label">(optional)</span></legend>
             <label><input type="radio" name="return-plan" value="return"> Return to my intention</label>
             <label><input type="radio" name="return-plan" value="save"> Save this for later</label>
             <label><input type="radio" name="return-plan" value="decide" checked> Pause and choose in the moment</label>
-            <p class="input-hint">Your plan is a private reminder you chose. All other choices remain available.</p>
+            <p class="input-hint">This is just a reminder you chose. You can always choose something else.</p>
           </fieldset>
+          </details>
         </div>
         
         <button type="submit" class="plant-btn" aria-label="Plant your intention and start browsing">
@@ -161,7 +164,7 @@
           </span>
           <span class="btn-arrow" aria-hidden="true">→</span>
         </button>
-        <p class="search-privacy-note">When you plant, the intention is also sent as a search query to your selected search provider. You can choose a different provider in Settings.</p>
+        <p class="search-privacy-note">Starting sends your intention to your chosen search provider as a search. You can change providers in Settings.</p>
       </form>
       
       <!-- Status message area -->
@@ -174,7 +177,7 @@
           <span class="action-text">Continue Current Session</span>
         </button>
         <button id="browse-freely-btn" type="button" class="action-btn action-ghost">
-          <span class="action-text">Explore Without Intention</span>
+          <span class="action-text">Browse without an intention</span>
         </button>
         <section id="compost-reminder" class="compost-reminder" aria-live="polite" hidden>
           <p id="compost-reminder-copy"></p>
@@ -189,12 +192,12 @@
       <div class="footer-content">
         <span class="footer-symbol" aria-hidden="true">🍃</span>
         <p class="footer-tagline">Your curiosity belongs here.</p>
-        <p class="footer-note">Garden history stays on this device • No extension telemetry • Open source</p>
+        <p class="footer-note">Your garden stays on this device • No telemetry • Open source</p>
         <a class="footer-guide-link" href="../guide/index.html">Read the full guide</a>
       </div>
     </footer>
   </main>
-  
+  <aside id="browser-footer-tip" class="browser-footer-tip" hidden><span>Want more room? In Brave, choose <strong>Customize Brave → Hide footer on New Tab page</strong>.</span><b aria-hidden="true">↓</b><button id="dismiss-footer-tip" type="button" aria-label="Dismiss footer tip">×</button></aside>
   <script type="module" src="app.js"></script>
 </body>
 </html>

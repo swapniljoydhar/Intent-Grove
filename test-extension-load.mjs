@@ -466,6 +466,10 @@ test('Gate 1: cross-context sync — ending a mission from New Tab hides the chi
   // planting page is all it takes.
   await webPage.goto(`chrome-extension://${extensionId}/newtab/index.html`);
   await webPage.waitForSelector('#browse-freely-btn');
+  const toolbarSettings = await webPage.evaluate(() => chrome.action.getUserSettings());
+  assert.equal(typeof toolbarSettings.isOnToolbar, 'boolean', 'the real browser must expose toolbar pin state');
+  await webPage.waitForFunction(() => document.querySelector('#pin-help')?.hidden === false);
+  assert.equal(await webPage.locator('#pin-state').textContent(), toolbarSettings.isOnToolbar ? 'Pinned' : 'Not pinned');
   await webPage.click('#browse-freely-btn');
   await waitForState((s) => s.activeSessionId === null, 'mission ended from the New Tab context');
 
@@ -595,4 +599,3 @@ test('no uncaught errors surfaced anywhere during the real-extension run', async
   const real = [...swErrors, ...webErrors].filter((e) => !/rate limit/i.test(e));
   assert.deepEqual(real, [], 'service worker and pages must stay free of uncaught errors');
 });
-
