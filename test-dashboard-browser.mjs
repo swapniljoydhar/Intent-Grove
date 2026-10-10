@@ -835,8 +835,8 @@ test('Brave-only footer guidance stays hidden in other Chromium browsers', async
   assert.equal(await page.locator('.browser-notice-arrow').isVisible(), false);
 });
 
-test('Brave footer tip points down briefly and can be dismissed', async t => {
-  const page = await openDashboard(t);
+test('Brave footer tip and arrow run their animation, then the tip visibly fades away', async t => {
+  const page = await openDashboard(t, stateFor(), { width: 1440, height: 1000 }, 'no-preference');
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'brave', { configurable: true, value: { isBrave: async () => true } });
   });
@@ -847,7 +847,29 @@ test('Brave footer tip points down briefly and can be dismissed', async t => {
   await page.waitForFunction(() => document.querySelector('#browser-footer-tip')?.hidden === false);
   assert.match(await page.locator('#browser-footer-tip').textContent(), /Customize Brave.*Hide footer on New Tab page/);
   assert.equal(await page.locator('#browser-footer-tip b').textContent(), '↓');
+  assert.equal(await page.locator('#browser-footer-tip').evaluate(el => getComputedStyle(el).animationName), 'footerTipFade');
+  assert.equal(await page.locator('#browser-footer-tip').evaluate(el => getComputedStyle(el).animationDuration), '8.5s');
+  assert.equal(await page.locator('#browser-footer-tip b').evaluate(el => getComputedStyle(el).animationName), 'browserNoticeArrow');
+  await page.waitForFunction(() => {
+    const tip = document.querySelector('#browser-footer-tip');
+    return tip && !tip.hidden && Number(getComputedStyle(tip).opacity) < 0.98;
+  }, undefined, { timeout: 8000 });
+  const fadeOpacity = Number(await page.locator('#browser-footer-tip').evaluate(el => getComputedStyle(el).opacity));
+  assert.ok(fadeOpacity > 0 && fadeOpacity < 1, `the tip should be partially faded before hiding; opacity=${fadeOpacity}`);
   await page.waitForFunction(() => document.querySelector('#browser-footer-tip')?.hidden === true, undefined, { timeout: 10000 });
+});
+
+test('Brave footer tip can be dismissed immediately', async t => {
+  const page = await openDashboard(t);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'brave', { configurable: true, value: { isBrave: async () => true } });
+  });
+  await page.goto('https://intent-grove.test/newtab/index.html');
+  await page.waitForFunction(() => document.querySelector('#onboarding-overlay')?.hidden === false);
+  await page.locator('#onboarding-skip').click();
+  await page.waitForFunction(() => document.querySelector('#browser-footer-tip')?.hidden === false);
+  await page.locator('#dismiss-footer-tip').click();
+  assert.equal(await page.locator('#browser-footer-tip').isVisible(), false);
 });
 
 test('first-run walkthrough uses real guide screens with accessible, bounded navigation', async t => {
