@@ -42,7 +42,7 @@ After updating files, click **Reload** on the extension card, then refresh open 
 
 Intent Grove is **research-informed, not research-validated**. Psychology research supports broad ideas such as monitoring goal progress, making specific if–then plans, and preserving autonomy. But this extension records navigation paths and estimated elapsed time—not actual goal progress or whether a visit served your intention. Reviews of digital self-control tools report mixed findings, and much of that evidence concerns blockers or other interventions unlike Intent Grove. None of it demonstrates that this extension improves browsing well-being.
 
-The current release has no user-outcome trial, study enrollment, analytics, or research telemetry. The proposed user-study protocol is a plan only; it does not mean a study is running or that data will be collected. See [EVIDENCE.md](EVIDENCE.md) for sources and claim limits, and [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md) for the proposed privacy-first evaluation framework.
+Intent Grove has not conducted a user-outcome study, and no study is active. The ordinary build disables study consent and counters. The repository contains opt-in, local-only study support that activates only in a separately configured build with recorded ethics approval, complete disclosures, explicit consent, and an eligibility self-attestation. There is no automatic upload, and the study export excludes browsing records and survey answers. See [EVIDENCE.md](EVIDENCE.md), [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md), and the [study review](STUDY_REVIEW.md).
 
 ## Settings ("Tend the grove")
 
@@ -60,7 +60,7 @@ The current release has no user-outcome trial, study enrollment, analytics, or r
 
 ## Privacy
 
-- **Browsing records stay on your device** in `chrome.storage.local`. No servers, analytics, accounts, cloud sync of browsing data, or research-data uploads are active. The proposed study is not running. Planting a mission sends its text to your selected search provider as a query; Intent Grove itself does not receive the results.
+- **Browsing records stay on your device** in `chrome.storage.local`. No servers, analytics, accounts, cloud sync of browsing data, or automatic research uploads are active. Study counters and consent are disabled in the ordinary build; a separately configured, ethics-approved study build can store allow-listed weekly aggregates only after explicit opt-in. Manual export is participant-reviewed. Planting a mission sends its text to your selected search provider as a query; Intent Grove itself does not receive the results.
 - Only **URL/title metadata** is stored — never page text.
 - Local history is **bounded**: 12 gardens · 96 pages per garden · 80 compost items · 30 days of reward history.
 - **Delete-all-data** in the dashboard wipes everything, including the theme preference.
@@ -109,6 +109,6 @@ npm run preview:trees         # local gallery of the real SVG tree renderer
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — the engineering deep dive: file structure, navigation semantics, Chromium integration notes, permissions rationale, accessibility engineering, garden rendering, tab/history behavior, memory and performance design, security & reliability implementation, and the full test-lane inventory.
 - **[CHANGELOG.md](CHANGELOG.md)** — release history.
 - **[EVIDENCE.md](EVIDENCE.md)** — research foundations, what they do and do not support, and current evidence limits.
-- **[STUDY_PROTOCOL.md](STUDY_PROTOCOL.md)** — proposed opt-in user-study and privacy-conscious telemetry design; not active and not implemented.
+- **[STUDY_PROTOCOL.md](STUDY_PROTOCOL.md)** — proposed study methodology and privacy safeguards; ordinary-build collection remains disabled. **[STUDY_REVIEW.md](STUDY_REVIEW.md)** — UI mapping, protocol stress test, and implementation gate.
 - **[SECURITY.md](SECURITY.md)** · original [security review](SECURITY_REVIEW_2026-08-15.md) · [modified-fork audit](AUDIT_REPORT_2026-08-16.md) · [September 2026 audit](AUDIT_2026-09-21.md)
 - **[CHROMEWEBSTORE.md](CHROMEWEBSTORE.md)** — store listing copy and per-permission justification · **[CONTRIBUTING.md](CONTRIBUTING.md)**

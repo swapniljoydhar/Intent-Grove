@@ -24,15 +24,15 @@ A future measure of perceived digital well-being may be useful in a study, but p
 
 ## Privacy and ethical guardrails
 
-- Browsing records remain in local extension storage. Planting an intention sends its text to the selected search provider as a query. Intent Grove currently has no analytics, cloud telemetry, research enrollment, or automatic research-data upload.
+- Browsing records remain in local extension storage. Planting an intention sends its text to the selected search provider as a query. The ordinary build has study enrollment and counters disabled. A separately configured, ethics-approved build can record only allow-listed weekly aggregates after explicit consent; reviewed export is manual and no automatic upload is implemented.
 - Do not call navigation depth, elapsed time, or path patterns “focus,” “attention,” “relevance,” “progress,” or “alignment” unless the user directly reports that interpretation.
 - Keep reminders optional, explain why they appeared, and let users dismiss, change, or disable them. No score, shame, punishment, public comparison, or blocking is part of the product goal.
 - Do not infer a psychological type from a path. Keep patterns count-backed, transparent, and overlapping.
-- Any future study data collection must be separate from ordinary extension use, explicitly opt-in, minimized, and revocable. No telemetry is being activated by this documentation change. See the [proposed study protocol](STUDY_PROTOCOL.md).
+- Any study collection must remain separate from ordinary extension use, explicitly opt-in, minimized, and revocable. Study code is off in the ordinary build; a configured study build requires ethics approval and complete disclosures. See the [study protocol](STUDY_PROTOCOL.md) and [implementation review](STUDY_REVIEW.md).
 
 ## Evaluation status
 
-Intent Grove has not had a user-outcome trial. The next evidence step is not a stronger marketing claim; it is a transparently consented study that asks users whether the tool helps them reflect and choose, while measuring autonomy, burden, and negative experiences as well as possible benefits. The [proposed study protocol](STUDY_PROTOCOL.md) describes a privacy-first path. It is a plan, not an active study, and it does not authorize collection of participant data.
+Intent Grove has not had a user-outcome trial. The next evidence step is a transparently consented study that asks users whether the tool helps them reflect and choose, while measuring autonomy, burden, and negative experiences. The [study protocol](STUDY_PROTOCOL.md) is still a proposal and does not authorize recruitment or data collection. The code-level framework is gated off in the ordinary build; see the [study review](STUDY_REVIEW.md).
 
 ## References
 

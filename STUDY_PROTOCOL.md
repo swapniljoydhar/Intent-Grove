@@ -1,6 +1,6 @@
 # Proposed privacy-conscious user-study protocol
 
-**Status: design proposal only.** This is not an active study, recruitment notice, or consent form. The current Intent Grove release collects no analytics or research telemetry and has no study enrollment or upload path. This document does not authorize data collection. Any study must be designed with qualified psychology and research-ethics partners and approved before recruitment.
+**Status: design proposal only.** This is not an active study, recruitment notice, or final consent form. The ordinary build keeps the study configuration disabled, so it records no research counters. The repository includes gated, local-only opt-in and manual-export support for a separately configured build; no automatic upload exists. This document does not authorize data collection or recruitment; code presence does not authorize it either. Qualified psychology, research-ethics, and privacy/security partners must approve a complete protocol before a study build is enabled.
 
 ## Research question
 
@@ -14,7 +14,7 @@ Do not define success as simply browsing less. The extension cannot infer whethe
 2. **Feasibility pilot:** Test recruitment, consent comprehension, survey burden, opt-out, data export, retention, accessibility, and adverse-experience reporting. Treat this phase as feasibility work only—not proof of benefit. Use the pilot to refine measures and estimate attrition and variance for planning a later study.
 3. **Preregistered evaluation:** If the pilot supports proceeding, compare an immediate-start group with a delayed-start (wait-list) group. A possible schedule is a brief baseline followed by several weeks of access, then a follow-up; the research team should set duration and sample size using the pilot and an a priori power analysis. The delayed group should be offered access after its comparison period. This design evaluates the extension as a package; it will not identify which individual feature caused a result. A later component study could compare reminders on versus off.
 
-Start with adults aged 18 or older. Do not recruit people on the assumption that they have an attention disorder, addiction, or other diagnosis, and do not market the study as treatment. Set the target countries and languages in advance.
+Start with adults aged 18 or older. Candidate inclusion criteria are: use of a supported desktop Chromium-family browser, residence in a predeclared country, ability to read an approved study language, and ability to provide informed consent. Candidate exclusions are: under 18, inability to consent, or outside the approved browser, country, language, or study-task scope. Do not recruit or exclude people based on an assumed diagnosis, and do not market the study as treatment. These criteria require research-ethics review and operational definition before use. Set the target countries and languages in advance.
 
 ## Outcomes and measures
 
@@ -32,24 +32,24 @@ Treat local usage counts only as feasibility or implementation measures. Do not 
 
 ### Default product behavior
 
-Keep the production extension free of telemetry. Ordinary users must not need to join a study, transmit data, or accept research consent to use any feature. Do not add an analytics SDK, background upload, advertising identifier, or hidden event stream.
+Keep the ordinary production configuration free of research collection. Ordinary users must not need to join a study, transmit data, or accept research consent to use any feature. Do not add an analytics SDK, background upload, advertising identifier, or hidden event stream. The shipped study configuration is disabled; the separate study build must remain off until the study team has completed the required approvals and disclosures.
 
 ### Separate opt-in study build
 
-If a study proceeds, use a separate study build and consent flow. Enrollment must be off by default and independent of extension settings. Explain the exact fields, purpose, recipient, retention period, risks, contact person, withdrawal method, and deletion process before a participant opts in. Revoking consent should stop further study collection and provide a clear way to delete locally buffered study data.
+If a study proceeds, use a separately configured study build and consent flow. Enrollment must be off by default and independent of ordinary feature-preference toggles; the consent panel may be shown in Settings without changing the extension’s normal behavior. Explain the exact fields, purpose, recipient, survey provider, retention period, risks, contact person, eligibility, withdrawal method, and deletion process before a participant opts in. The current code requires ethics approval to be explicitly recorded in the build configuration and requires the disclosure fields to be complete. Revoking consent stops collection and deletes locally buffered study data. The configured local-retention deadline is enforced on the next study-data access after the device-clock expiry (there is no background alarm); disclose this timing and evaluate whether it meets the approved protocol.
 
-Prefer weekly surveys plus an explicit, user-reviewed manual export over continuous telemetry. Any candidate telemetry should be computed on-device, remain there until the participant chooses **Review and share**, and show the exact payload before export. The current release does not implement these counters or this export.
+Prefer weekly surveys plus an explicit, user-reviewed manual export over continuous telemetry. The implemented candidate counters are computed on-device and remain there until the participant reviews the exact payload and chooses **Download reviewed study data**. The ordinary build cannot enroll or record these counters. There is no survey integration; survey responses must be collected separately by the approved, disclosed provider and are not included in the extension export.
 
 A minimal candidate payload, subject to ethics and privacy review, could contain only:
 
 - a random study code that is not derived from a Chrome profile, account, device, or installation identifier;
 - a relative study-week number, not an exact date or timestamp;
 - coarse counts or ranges for sessions started and reminders shown, dismissed, or reviewed; and
-- the participant’s separately consented survey responses.
+- separately consented survey responses in the study team’s dataset (not in the extension export).
 
 Do not collect or export URLs, page titles, domains, search queries, mission text, personal notes, page content, tab IDs, exact navigation paths, raw event sequences, or exact timestamps. Do not add fields merely because the extension can access them. Treat even aggregates and free-text survey answers as potentially identifying; minimize them, restrict access, and suppress small cells in public reporting. Keep any contact information needed for follow-up in a separate, access-restricted file that is not joined to browsing-derived data except through the random study code.
 
-Store research data with encryption in transit and at rest, access limited to the named study team, a documented retention and deletion schedule, and a breach-response plan. Name any survey or storage provider in the consent materials and assess it before use. Do not send study data to the extension developer or an unreviewed analytics service by default.
+Study-team copies and survey responses must use encryption in transit and at rest, access limited to the named study team, a documented retention/deletion schedule, and a breach-response plan. The extension’s local buffer uses Chrome local extension storage and is not app-layer encrypted; the consent must disclose that it relies on operating-system and browser-profile access controls. If the ethics or security review requires app-layer encryption, do not enable this build until that requirement is met. Name and assess every survey or storage provider before use. Do not send study data to the extension developer or an unreviewed analytics service by default.
 
 ## Consent, ethics, and participant protections
 
