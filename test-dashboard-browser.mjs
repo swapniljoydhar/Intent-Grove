@@ -788,6 +788,7 @@ test('first-run walkthrough uses real guide screens with accessible, bounded nav
   await page.goto('https://intent-grove.test/newtab/index.html');
   await page.waitForFunction(() => document.querySelector('#onboarding-overlay')?.hidden === false);
   assert.equal(await page.locator('[data-guide-slide]').count(), 4);
+  assert.equal(await page.getByRole('link', { name: 'Read the full guide and try the samples' }).getAttribute('href'), '../guide/index.html');
   for (const image of await page.locator('[data-guide-slide] img').all()) {
     assert.ok(await image.getAttribute('src'));
     assert.ok((await image.getAttribute('alt'))?.length > 20);
@@ -901,6 +902,7 @@ test('completed onboarding can be replayed from Settings without resetting setup
   await page.goto('https://intent-grove.test/settings/index.html');
   const tourLink = page.getByRole('link', { name: 'Replay the quick tour' });
   assert.equal(await tourLink.getAttribute('href'), '../newtab/index.html?tour=1');
+  assert.equal(await page.getByRole('link', { name: 'Read the full guide' }).getAttribute('href'), '../guide/index.html');
   await tourLink.click();
   await page.waitForURL('**/newtab/index.html?tour=1');
   await page.waitForFunction(() => !document.querySelector('#onboarding-overlay').hidden);
@@ -948,4 +950,55 @@ test('theme follows the system until chosen, then stays synchronized across exte
   assert.equal(await popup.locator('[data-theme-toggle]').getAttribute('aria-label'), 'Switch to light theme');
   await popup.locator('[data-theme-toggle]').click();
   assert.equal(await popup.locator('html').getAttribute('data-theme'), 'light');
+});
+
+test('the in-extension guide explains the tree and choice card with a data-free sample demo', async t => {
+  const page = await openDashboard(t, stateFor(), { width: 320, height: 760 });
+  await page.goto('https://intent-grove.test/guide/index.html');
+  await page.waitForSelector('[data-guide-page]');
+  const guideCopy = await page.locator('main').innerText();
+  assert.match(guideCopy, /not a psychological test/i);
+  assert.match(await page.locator('.faq-section details').nth(1).textContent(), /not a validated psychological assessment, diagnosis/i);
+  assert.match(guideCopy, /navigation path/i);
+  assert.match(guideCopy, /does not decide whether a page was useful/i);
+  assert.match(guideCopy, /five choices/i);
+  assert.equal(await page.locator('a[href^="http"]').count(), 0, 'the guide must not send users to external pages');
+
+  const messageCount = await page.evaluate(() => globalThis.contentMessages?.length || 0);
+  const localDataBefore = await page.evaluate(() => JSON.stringify(Object.entries(localStorage).sort()));
+  await page.locator('[data-sample-node="tuition"]').click();
+  assert.match(await page.locator('#sample-tree-feedback').innerText(), /tuition details/i);
+  await page.locator('[data-sample-choice="return"]').click();
+  assert.match(await page.locator('#sample-choice-feedback').innerText(), /page where your intention session began/i);
+  assert.equal(await page.evaluate(() => globalThis.contentMessages?.length || 0), messageCount, 'demo interactions must not send extension messages');
+  assert.equal(await page.evaluate(() => JSON.stringify(Object.entries(localStorage).sort())), localDataBefore, 'demo interactions must not save browsing data');
+
+  for (const width of [320, 375, 768]) {
+    await page.setViewportSize({ width, height: 760 });
+    const layout = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
+    assert.ok(layout.content <= layout.viewport, `guide should not overflow horizontally at ${width}px (${layout.content}px content)`);
+  }
+});
+
+test('primary extension pages remain horizontally usable on a narrow mobile viewport', async t => {
+  const page = await openDashboard(t, stateFor(garden(7)), { width: 320, height: 760 });
+  const assertFits = async label => {
+    const layout = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
+    assert.ok(layout.content <= layout.viewport, `${label} should fit the ${layout.viewport}px viewport (content ${layout.content}px)`);
+  };
+
+  await assertFits('Garden Map');
+  await page.getByRole('button', { name: 'Insights & Stats' }).click();
+  await page.waitForFunction(() => document.querySelector('#stats-tab').classList.contains('active'));
+  await assertFits('Insights & Stats');
+
+  await page.goto('https://intent-grove.test/settings/index.html');
+  await page.waitForSelector('#save');
+  await assertFits('Settings');
+
+  await page.goto('https://intent-grove.test/newtab/index.html');
+  await page.waitForFunction(() => document.querySelector('#onboarding-overlay')?.hidden === false);
+  await page.locator('#onboarding-skip').click();
+  await page.waitForFunction(() => document.querySelector('#onboarding-overlay').hidden === true);
+  await assertFits('New Tab');
 });

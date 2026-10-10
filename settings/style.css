@@ -106,3 +106,12 @@ footer button{display:block;margin:12px auto 0}}
 [data-theme="dark"] .control-group p,
 [data-theme="dark"] .radio small { color: #b0c0ab; }
 [data-theme="dark"] textarea::placeholder { color: #a4b4a0; }
+
+
+@media (max-width: 520px) {
+  .brand-line { flex-wrap: wrap; }
+  .brand-line .theme-toggle { margin-left: auto; min-height: 44px; }
+  .preset { min-height: 44px; }
+  .save { min-height: 48px; }
+  .guide-link { min-height: 44px; display: inline-flex; align-items: center; }
+}

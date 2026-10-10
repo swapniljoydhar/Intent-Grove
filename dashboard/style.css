@@ -80,3 +80,18 @@ body[data-motion="off"] .tab-content.active{animation:none}
 [data-theme="dark"] .detail-button.quiet { background: transparent; color: #b7c5b2; }
 [data-theme="dark"] footer { color: #b5c5af; }
 [data-theme="dark"] #tree.forest-scene { border-color: #354235; background: radial-gradient(ellipse at 48% 40%, #273228 0%, #202920 55%, #1b231c 100%); }
+
+
+/* Mobile readability: prioritize full-width stats and comfortable controls. */
+.data-controls .guide-link { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.data-controls .guide-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .dashboard-tabs { width: 100%; }
+  .tab-btn { flex: 1; min-height: 44px; }
+  .garden-controls { width: 100%; }
+  .garden-controls select { width: 100%; max-width: none; min-height: 44px; }
+  .data-controls { width: 100%; gap: 8px; }
+  .data-controls > * { flex: 1 1 132px; min-height: 44px; }
+  .detail-actions .detail-button, .btn { min-height: 44px; }
+}

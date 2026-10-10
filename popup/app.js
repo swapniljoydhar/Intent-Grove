@@ -82,7 +82,7 @@ function reflectionFor(session) {
 }
 
 function updatePauseCopy(paused) {
-  pauseEl.textContent = paused ? 'Resume reminders' : 'Pause interventions';
+  pauseEl.textContent = paused ? 'Resume reminders' : 'Pause reminders';
 }
 
 function setRitual(open) {
@@ -126,7 +126,7 @@ async function render() {
         ? 'This branch is getting long.'
         : depth > 0
           ? `Growing well — ${depth} ${depth === 1 ? 'branch' : 'branches'} from the root.`
-          : 'Growing from the root of your mission.';
+          : 'Growing from the root of your intention.';
 
   missionEl.textContent = session.mission;
   stateEl.textContent = state;

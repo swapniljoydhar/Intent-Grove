@@ -333,3 +333,22 @@ body[data-perf="reduced"] .light-rays,
 body[data-perf="reduced"] .fireflies i,
 body[data-perf="reduced"] .forest-scene .tree-canopy,
 body[data-page-visibility="hidden"] .fireflies i { animation-play-state: paused !important; }
+
+
+/* Full guide entry points and mobile-friendly first-run controls. */
+.onboarding-guide-link { margin: 2px 0 12px; font-size: .82rem; }
+.onboarding-guide-link a, .footer-guide-link { color: var(--color-accent-green-dark); font-weight: 700; text-underline-offset: 3px; }
+.footer-guide-link { font-size: .8rem; }
+.guide-nav { width: 44px; height: 44px; }
+.onboarding-actions button { min-height: 44px; }
+.return-plan label { min-height: 44px; }
+@media (max-width: 480px) {
+  .onboarding-overlay { padding: 12px; }
+  .onboarding-card { width: 100%; max-height: calc(100svh - 24px); padding: 16px; }
+  .onboarding-actions { flex-wrap: wrap; gap: 8px; }
+  .onboarding-start-btn { width: 100%; max-width: none; justify-content: center; }
+  .onboarding-guide-link { margin-bottom: 8px; }
+  .onboarding-guide-link a, .footer-guide-link { display: inline-flex; align-items: center; min-height: 44px; }
+  .guide-slide figcaption { padding: 10px; }
+}
+[data-theme="dark"] .onboarding-guide-link a, [data-theme="dark"] .footer-guide-link { color: #b6d7ad; }

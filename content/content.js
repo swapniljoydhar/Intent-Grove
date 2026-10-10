@@ -125,7 +125,7 @@
 .choice-copy{font:14px/1.5 ui-sans-serif,system-ui,sans-serif;color:#3d5239;margin:0 0 16px}
 .choice-copy em{display:block;margin-top:10px;color:#6c8c68;font-size:13px}
 .choice-actions{display:flex;flex-direction:column;gap:8px}
-.choice{appearance:none;border:1px solid rgba(74,104,71,.2);border-radius:14px;background:rgba(255,255,255,.85);color:#29432d;font:inherit;text-align:left;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .15s,border-color .15s,transform .1s}
+.choice{appearance:none;min-height:44px;border:1px solid rgba(74,104,71,.2);border-radius:14px;background:rgba(255,255,255,.85);color:#29432d;font:inherit;text-align:left;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .15s,border-color .15s,transform .1s}
 .choice:hover{background:#ffffff;border-color:rgba(74,104,71,.4);transform:translateX(2px)}
 .choice:active{transform:scale(.98)}
 .choice:focus-visible,.choice-card .close:focus-visible,.choice-secondary-action:focus-visible{outline:3px solid #527f57;outline-offset:3px}
@@ -197,16 +197,16 @@
   });
   seedEl.appendChild(treeSVG);
   const copyEl = makeElement('span', 'chip-copy');
-  copyEl.append(makeElement('span', 'chip-kicker', '', 'current mission'), makeElement('strong', 'chip-mission'), makeElement('small', 'chip-state', { 'aria-live': 'polite' }));
+  copyEl.append(makeElement('span', 'chip-kicker', '', 'current intention'), makeElement('strong', 'chip-mission'), makeElement('small', 'chip-state', { 'aria-live': 'polite' }));
   const actionsEl = makeElement('div', 'chip-actions');
   actionsEl.append(makeElement('button', 'chip-btn', { 'data-action': 'pause', 'aria-label': 'Pause Intent Grove' }, 'Pause'), makeElement('button', 'chip-btn', { 'data-action': 'pause-site', 'aria-label': 'Pause Intent Grove on this site' }, 'This site'), makeElement('button', 'chip-btn minimize', { 'data-action': 'minimize', 'aria-label': 'Minimize Intent Grove' }, '–'));
   chipEl.append(seedEl, copyEl, actionsEl);
   const choiceCardEl = makeElement('section', 'choice-card', { role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'ff-title', hidden: true });
   choiceCardEl.append(makeElement('button', 'close', { 'data-action': 'dismiss', 'aria-label': 'Keep exploring' }, '×'), makeElement('p', 'choice-eyebrow', {}, 'A moment to choose'), makeElement('h2', '', { id: 'ff-title' }, 'This path is deep, not wrong.'), makeElement('p', 'choice-copy'));
   const choiceActionsEl = makeElement('div', 'choice-actions');
-  const returnChoice = makeChoice('home', 'choice', '↶', 'Return to my mission', 'Go back to where this session began.');
-  choiceActionsEl.append(makeChoice('dismiss', 'choice', '→', 'Keep exploring', 'Leave the page open and continue by choice.'), returnChoice, makeChoice('compost', 'choice', '⌁', 'Save this for later', 'Put this curiosity in your compost pile.'), makeChoice('mission', 'choice', '＋', 'Start a new mission', 'Let this become the thing you are here to do.'));
-  const missionHere = makeElement('button', 'choice-secondary-action', { type: 'button', 'data-action': 'mission-here' }, 'Make this page my new mission');
+  const returnChoice = makeChoice('home', 'choice', '↶', 'Return to my intention', 'Go back to where this session began.');
+  choiceActionsEl.append(makeChoice('dismiss', 'choice', '→', 'Keep exploring', 'Leave the page open and continue by choice.'), returnChoice, makeChoice('compost', 'choice', '⌁', 'Save this for later', 'Put this curiosity in your compost pile.'), makeChoice('mission', 'choice', '＋', 'Start a new intention', 'Let this become the thing you are here to do.'));
+  const missionHere = makeElement('button', 'choice-secondary-action', { type: 'button', 'data-action': 'mission-here' }, 'Use this page as my new starting point');
   choiceCardEl.append(choiceActionsEl, missionHere);
   const forestFindEl = makeElement('aside', 'forest-find', { role: 'status', 'aria-live': 'polite', hidden: true });
   rootEl.append(chipEl, choiceCardEl, forestFindEl);
@@ -691,7 +691,7 @@
   function applyChipCopy(session, stateKind, state, paused) {
     missionEl.textContent = session.mission;
     chip.dataset.state = stateKind;
-    chip.setAttribute('aria-label', `Intent Grove companion. Mission: ${session.mission}. ${state}.`);
+    chip.setAttribute('aria-label', `Intent Grove companion. Intention: ${session.mission}. ${state}.`);
     chip.hidden = false;
     pauseBtn.textContent = paused ? 'Resume' : 'Pause';
     pauseBtn.setAttribute('aria-label', paused ? 'Resume Intent Grove' : 'Pause Intent Grove');
