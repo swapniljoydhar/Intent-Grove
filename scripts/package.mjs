@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process';
 const root = process.cwd();
 const dist = `${root}/dist`;
 const archive = `${dist}/intent-grove.zip`;
-const entries = ['manifest.json', 'background', 'content', 'dashboard', 'icons', 'newtab', 'popup', 'settings', 'shared'];
+const entries = ['manifest.json', 'background', 'content', 'dashboard', 'guide', 'icons', 'newtab', 'popup', 'settings', 'shared'];
 const quotePowerShell = (value) => `'${value.replaceAll("'", "''")}'`;
 
 // Preference order. Both Unix candidates store paths relative to `root` and

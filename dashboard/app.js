@@ -276,7 +276,7 @@ async function render() {
   const session = snap.session;
   const nodes = session?.nodes || [];
   if (!nodes.some((node) => node.id === selectedNodeId)) selectedNodeId = null;
-  document.querySelector('#mission').textContent = session ? `Mission: ${session.mission}` : 'A visual record of where your browsing path went today.';
+  document.querySelector('#mission').textContent = session ? `Intention: ${session.mission}` : 'A visual record of where your browsing path went today.';
   document.querySelector('#mission-note').textContent = session?.note ? `Why it matters: ${session.note}` : 'No extra reason was recorded for this mission.';
   const deepest = Math.max(0, ...nodes.map((node) => node.depth));
   const composted = nodes.filter((node) => node.state === 'composted').length;

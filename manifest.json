@@ -3,7 +3,7 @@
   "name": "Intent Grove",
   "version": "0.3.8",
   "minimum_chrome_version": "111",
-  "description": "A gentle mission-aware browsing companion that helps you notice rabbit holes without blocking the web.",
+  "description": "A gentle, non-blocking browsing reflection tool that helps you notice where a session goes.",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
@@ -41,13 +41,13 @@
       "suggested_key": {
         "default": "Alt+F"
       },
-      "description": "Start or end a focus mission"
+      "description": "Start or end an intention session"
     },
     "return-to-mission": {
       "suggested_key": {
         "default": "Alt+M"
       },
-      "description": "Return to the mission origin"
+      "description": "Return to the session's starting page"
     }
   },
   "chrome_url_overrides": {

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#edf3e9">
+  <title>How Intent Grove works</title>
+  <script src="../shared/theme-bootstrap.js"></script>
+  <link rel="stylesheet" href="../shared/theme-controls.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="guide-shell" data-guide-page>
+    <header class="guide-header">
+      <a class="brand" href="../newtab/index.html" aria-label="Intent Grove home">
+        <img src="../icons/icon.svg" alt="" aria-hidden="true">
+        <span>Intent Grove</span>
+      </a>
+      <nav class="guide-actions" aria-label="Extension pages">
+        <a href="../dashboard/index.html">Garden Map</a>
+        <a href="../settings/index.html">Settings</a>
+        <button class="theme-toggle" type="button" data-theme-toggle>
+          <span aria-hidden="true" data-theme-icon>☾</span>
+          <span data-theme-label>Dark theme</span>
+        </button>
+      </nav>
+    </header>
+
+    <section class="guide-hero" aria-labelledby="guide-title">
+      <p class="eyebrow">A FIELD GUIDE</p>
+      <h1 id="guide-title">Notice the path.<br><em>Keep the choice.</em></h1>
+      <p class="hero-copy">Intent Grove gives you a private, visual record of how a browsing session unfolds. You set the intention; the extension can offer a gentle prompt; you decide what the path means and what to do next.</p>
+      <p class="not-a-test"><strong>A reflection tool, not a psychological test.</strong> The tree is a metaphor for recorded navigation. It does not assess personality, attention, mood, health, motivation, or whether a page was useful.</p>
+    </section>
+
+    <nav class="guide-toc" aria-label="On this page">
+      <a href="#start">Start here</a>
+      <a href="#tree">Read the tree</a>
+      <a href="#choice-card">Try the choice card</a>
+      <a href="#weekly-patterns">Weekly patterns</a>
+      <a href="#privacy">Privacy and control</a>
+    </nav>
+
+    <div class="guide-content">
+      <section class="guide-section" id="start" aria-labelledby="start-title">
+        <div class="section-heading">
+          <p class="eyebrow">01 · BEGIN</p>
+          <h2 id="start-title">Start with a reference point</h2>
+        </div>
+        <div class="two-column">
+          <article class="guide-card">
+            <h3>Choose what matters for this session</h3>
+            <p>Write a short intention in your own words. It is a reference point for later reflection, not a rule you have to follow. You can add a private note about why it matters and choose what you might do if a reminder appears.</p>
+            <p>When you start, your intention is also sent as a search query to the provider selected in Settings. The optional personal note stays on this device and is not sent to the search provider.</p>
+          </article>
+          <article class="guide-card">
+            <h3>Or browse without one</h3>
+            <p>Choose <strong>Explore Without Intention</strong> whenever that feels right. Intent Grove does not block websites, close tabs, or require you to return to a particular page.</p>
+            <p>You can change your intention, pause the companion, or end a session at any time.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="guide-section" id="tree" aria-labelledby="tree-title">
+        <div class="section-heading">
+          <p class="eyebrow">02 · THE GARDEN MAP</p>
+          <h2 id="tree-title">What the tree shows</h2>
+        </div>
+        <p class="section-intro">The tree turns browser-observed page changes into a navigation path you can inspect. It describes the route’s shape, not meaning or relevance; it does not decide whether a page was useful or aligned with your intention.</p>
+        <div class="two-column tree-explainer">
+          <article class="guide-card">
+            <h3>Read it from the root outward</h3>
+            <dl class="tree-key">
+              <div><dt>Root</dt><dd>The page where the session began.</dd></div>
+              <div><dt>Branch</dt><dd>A recorded move to another page or route.</dd></div>
+              <div><dt>Leaf</dt><dd>A page at the end of a path recorded so far.</dd></div>
+              <div><dt>Depth</dt><dd>The number of recorded navigation steps from the root to a page.</dd></div>
+            </dl>
+            <p class="small-note">Links and some tab or route changes can be connected; other pages may be marked as unlinked when their relationship is unclear. A longer path is not automatically a detour.</p>
+          </article>
+          <article class="guide-card tree-demo-card" aria-labelledby="tree-demo-title">
+            <div class="demo-heading">
+              <div><p class="eyebrow">FICTIONAL SAMPLE</p><h3 id="tree-demo-title">Try the sample tree</h3></div>
+              <span class="demo-badge">Nothing is saved</span>
+            </div>
+            <p class="small-note">Select a sample page to see how the route is counted. These labels are made up; no real pages are opened.</p>
+            <ol class="sample-tree" aria-label="Fictional sample browsing tree">
+              <li>
+                <button class="sample-node" type="button" data-sample-node="root" aria-pressed="false"><span class="node-kind">Root</span><span class="node-copy"><strong>Compare local programs</strong><small>Starting page · depth 0</small></span></button>
+                <ol>
+                  <li>
+                    <button class="sample-node" type="button" data-sample-node="requirements" aria-pressed="false"><span class="node-kind">Branch</span><span class="node-copy"><strong>Read program requirements</strong><small>One link step · depth 1</small></span></button>
+                    <ol><li><button class="sample-node" type="button" data-sample-node="tuition" aria-pressed="false"><span class="node-kind">Leaf</span><span class="node-copy"><strong>Compare tuition details</strong><small>Two link steps · depth 2</small></span></button></li></ol>
+                  </li>
+                  <li><button class="sample-node" type="button" data-sample-node="scholarships" aria-pressed="false"><span class="node-kind">Branch</span><span class="node-copy"><strong>Explore scholarships</strong><small>One link step · depth 1</small></span></button></li>
+                </ol>
+              </li>
+            </ol>
+            <p id="sample-tree-feedback" class="demo-feedback" role="status" aria-live="polite">Choose a sample page to see its place in the tree.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="guide-section" id="choice-card" aria-labelledby="choice-title">
+        <div class="section-heading">
+          <p class="eyebrow">03 · A MOMENT TO CHOOSE</p>
+          <h2 id="choice-title">The choice card is an invitation</h2>
+        </div>
+        <p class="section-intro">At the reminder point you chose in Settings, an on-page card can describe the recorded path and offer a pause. It does not cover your page with a blocker or decide which option is best.</p>
+        <article class="choice-demo" aria-labelledby="choice-demo-title">
+          <div class="choice-demo-copy">
+            <p class="eyebrow">FICTIONAL SAMPLE · FIVE CHOICES</p>
+            <h3 id="choice-demo-title">This path is deep, not wrong.</h3>
+            <p>You set “Compare local programs.” The browser recorded two navigation steps to “Compare tuition details.” This is path distance, not page relevance. You decide what to do next.</p>
+            <p class="small-note">Try a button. This preview only changes the note below; it does not navigate, save a page, or change your settings.</p>
+          </div>
+          <div class="sample-choices" role="group" aria-label="Sample choice-card actions">
+            <button type="button" data-sample-choice="continue" aria-pressed="false"><strong>Keep exploring</strong><span>Leave the page open and continue by choice.</span></button>
+            <button type="button" data-sample-choice="return" aria-pressed="false"><strong>Return to my intention</strong><span>Go back to where this session began.</span></button>
+            <button type="button" data-sample-choice="save" aria-pressed="false"><strong>Save this for later</strong><span>Put this page in your local Save for Later list.</span></button>
+            <button type="button" data-sample-choice="new" aria-pressed="false"><strong>Start a new intention</strong><span>Let this become the thing you are here to do.</span></button>
+            <button type="button" data-sample-choice="page" aria-pressed="false"><strong>Use this page as my new starting point</strong><span>Begin a new path from the page you are viewing.</span></button>
+          </div>
+          <p id="sample-choice-feedback" class="demo-feedback choice-feedback" role="status" aria-live="polite">Choose any sample action to see what it means in the real extension.</p>
+        </article>
+        <div class="two-column follow-up">
+          <article class="guide-card"><h3>Your settings shape the timing</h3><p>The quiet reminder and choice point are adjustable. You can pause the companion on one site or pause it everywhere. Reminder wording is a prompt for your own reflection, not a verdict about the page.</p></article>
+          <article class="guide-card"><h3>Elapsed time is only elapsed time</h3><p>Session time can include time away from the browser, and tab time does not measure attention or active reading. Treat these numbers as rough records, not productivity scores.</p></article>
+        </div>
+      </section>
+
+      <section class="guide-section" id="weekly-patterns" aria-labelledby="patterns-title">
+        <div class="section-heading">
+          <p class="eyebrow">04 · OPTIONAL REFLECTION</p>
+          <h2 id="patterns-title">Weekly path patterns</h2>
+        </div>
+        <div class="guide-card">
+          <p>Insights &amp; Stats can show counts of recorded forks, straight-through paths, explicit search refinements, and return events from gardens still in local history. One garden can contribute to more than one pattern. These are descriptions of browser events—not behavioral archetypes, personality labels, or evidence that a path did or did not serve you.</p>
+          <p>The weekly reminder is off by default. If enabled, its quiet note appears only inside Insights &amp; Stats, at most once every seven days, after enough completed gardens are available. It does not use browser or operating-system notifications.</p>
+          <a class="inline-link" href="../dashboard/index.html">Open Insights &amp; Stats</a>
+        </div>
+      </section>
+
+      <section class="guide-section" id="privacy" aria-labelledby="privacy-title">
+        <div class="section-heading">
+          <p class="eyebrow">05 · YOUR DATA, YOUR CONTROL</p>
+          <h2 id="privacy-title">What stays here—and what does not</h2>
+        </div>
+        <div class="two-column">
+          <article class="guide-card">
+            <h3>Stored on this device</h3>
+            <p>Garden history, recorded page paths, your optional personal note, and your settings are kept in the browser’s local extension storage. Intent Grove does not send garden history to its developers and has no extension telemetry.</p>
+            <p>You can review, export, import, or clear local data from the Garden Map.</p>
+          </article>
+          <article class="guide-card">
+            <h3>Sent to your chosen search provider</h3>
+            <p>When you plant an intention, the text is also used as a search query and is sent to your selected search provider. Your optional personal note is not included in that query.</p>
+            <a class="inline-link" href="../settings/index.html">Review Settings</a>
+          </article>
+        </div>
+        <aside class="demo-boundary"><strong>About this guide’s demos</strong><p>The tree and choice-card examples use fictional labels. Clicking them only updates the explanation on this page. They do not read your garden, save browsing data, send extension messages, change settings, or open any page.</p></aside>
+      </section>
+
+      <section class="guide-section faq-section" aria-labelledby="faq-title">
+        <div class="section-heading"><p class="eyebrow">QUICK ANSWERS</p><h2 id="faq-title">A few things you may be wondering</h2></div>
+        <details><summary>Does the tree tell me whether I was focused?</summary><p>No. It shows recorded navigation relationships and rough elapsed time. It cannot observe your thoughts, attention, or whether a page was useful.</p></details>
+        <details><summary>Is this a psychological or clinical test?</summary><p>No. It is a browsing-reflection tool, not a validated psychological assessment, diagnosis, or treatment tool.</p></details>
+        <details><summary>Will a reminder stop me from opening a page?</summary><p>No. The web stays open. You can keep exploring, return, save the page, or choose another intention.</p></details>
+        <details><summary>Does this demo touch my real browsing history?</summary><p>No. It uses only the fictional sample shown here. Its buttons change explanatory text on this page and nothing else.</p></details>
+      </section>
+    </div>
+
+    <footer class="guide-footer">
+      <p>Use the parts that help; ignore the rest. Your choices remain yours.</p>
+      <nav aria-label="More Intent Grove pages">
+        <a href="../newtab/index.html?tour=1">Replay the short tour</a>
+        <a href="../dashboard/index.html">Open the Garden Map</a>
+        <a href="../settings/index.html">Change Settings</a>
+      </nav>
+    </footer>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
