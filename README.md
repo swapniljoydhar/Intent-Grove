@@ -2,7 +2,7 @@
 
 Intent Grove is a calm, local-first extension for Chromium-family browsers. Set an intention — *"Compare laptops for university"* — then browse normally while it grows your session into a small garden. If your recorded route reaches a depth you choose, it can offer a gentle moment to reflect and a set of choices. **Depth is navigation distance, not a measure of relevance or a score:** only you can decide whether a detour served your intention. Browsing records stay on your device; when you start, your chosen search provider receives the intention as a search query.
 
-There is no generative AI, no summarizer, no remote model, and no page-content classifier — just a transparent branch model built from navigation signals. Intent Grove cannot tell whether a page is relevant or whether you are paying attention; the detour is yours to keep, save, or leave. It is a reflection aid, not a clinically validated treatment or a proven way to reduce browsing time. Its reminders may help some people notice a mismatch, and may not help others.
+There is no generative AI, no summarizer, no remote model, and no page-content classifier — just a transparent branch model built from navigation signals. Intent Grove cannot tell whether a page is relevant or whether you are paying attention; the detour is yours to keep, save, or leave. It is a research-informed reflection aid, not a psychological test, validated behavioral intervention, or proven way to reduce browsing time. The project has not conducted a user-outcome study, so it is not known whether the extension improves well-being or helps people make choices they endorse.
 
 ## Quick install (any Chromium desktop browser)
 
@@ -38,6 +38,12 @@ After updating files, click **Reload** on the extension card, then refresh open 
 - **The companion follows your browser's light/dark preference**, and the whole extension respects reduced-motion settings.
 - **Shortcuts:** `Alt+F` starts or ends a mission · `Alt+M` returns you to the mission origin.
 
+## Research foundations and limitations
+
+Intent Grove is **research-informed, not research-validated**. Psychology research supports broad ideas such as monitoring goal progress, making specific if–then plans, and preserving autonomy. But this extension records navigation paths and estimated elapsed time—not actual goal progress or whether a visit served your intention. Reviews of digital self-control tools report mixed findings, and much of that evidence concerns blockers or other interventions unlike Intent Grove. None of it demonstrates that this extension improves browsing well-being.
+
+The current release has no user-outcome trial, study enrollment, analytics, or research telemetry. The proposed user-study protocol is a plan only; it does not mean a study is running or that data will be collected. See [EVIDENCE.md](EVIDENCE.md) for sources and claim limits, and [STUDY_PROTOCOL.md](STUDY_PROTOCOL.md) for the proposed privacy-first evaluation framework.
+
 ## Settings ("Tend the grove")
 
 | Setting | What it does |
@@ -54,7 +60,7 @@ After updating files, click **Reload** on the extension card, then refresh open 
 
 ## Privacy
 
-- **Browsing records stay on your device** in `chrome.storage.local`. No servers, no analytics, no accounts, no cloud sync of browsing data. Planting a mission sends its text to your selected search provider as a query; Intent Grove itself does not receive the results.
+- **Browsing records stay on your device** in `chrome.storage.local`. No servers, analytics, accounts, cloud sync of browsing data, or research-data uploads are active. The proposed study is not running. Planting a mission sends its text to your selected search provider as a query; Intent Grove itself does not receive the results.
 - Only **URL/title metadata** is stored — never page text.
 - Local history is **bounded**: 12 gardens · 96 pages per garden · 80 compost items · 30 days of reward history.
 - **Delete-all-data** in the dashboard wipes everything, including the theme preference.
@@ -102,6 +108,7 @@ npm run preview:trees         # local gallery of the real SVG tree renderer
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — the engineering deep dive: file structure, navigation semantics, Chromium integration notes, permissions rationale, accessibility engineering, garden rendering, tab/history behavior, memory and performance design, security & reliability implementation, and the full test-lane inventory.
 - **[CHANGELOG.md](CHANGELOG.md)** — release history.
-- **[EVIDENCE.md](EVIDENCE.md)** — what current research can and cannot support, design guardrails, and a private evaluation plan.
+- **[EVIDENCE.md](EVIDENCE.md)** — research foundations, what they do and do not support, and current evidence limits.
+- **[STUDY_PROTOCOL.md](STUDY_PROTOCOL.md)** — proposed opt-in user-study and privacy-conscious telemetry design; not active and not implemented.
 - **[SECURITY.md](SECURITY.md)** · original [security review](SECURITY_REVIEW_2026-08-15.md) · [modified-fork audit](AUDIT_REPORT_2026-08-16.md) · [September 2026 audit](AUDIT_2026-09-21.md)
 - **[CHROMEWEBSTORE.md](CHROMEWEBSTORE.md)** — store listing copy and per-permission justification · **[CONTRIBUTING.md](CONTRIBUTING.md)**
