@@ -54,6 +54,10 @@ async function openDashboard(t, state = stateFor(), viewport = { width: 1440, he
     let state = initialState;
     const listeners = new Set();
     globalThis.chrome = {
+      action: {
+        async getUserSettings() { return { isOnToolbar: globalThis.testIsPinned ?? false }; },
+        onUserSettingsChanged: { addListener(listener) { globalThis.testPinListener = listener; } }
+      },
       runtime: {
         id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         getManifest: () => ({ version: '0.3.4' }),
@@ -98,6 +102,10 @@ async function openDashboard(t, state = stateFor(), viewport = { width: 1440, he
         addListener: listener => listeners.add(listener),
         removeListener: listener => listeners.delete(listener)
       } }
+    };
+    globalThis.changeTestPinState = pinned => {
+      globalThis.testIsPinned = pinned;
+      globalThis.testPinListener?.({ isOnToolbar: pinned });
     };
     globalThis.updateTestState = next => {
       const oldValue = state;
@@ -163,6 +171,9 @@ async function openSettings(t, options = {}) {
   }, options.failUpdate ?? true);
   await page.goto('https://intent-grove.test/settings/index.html');
   await page.waitForFunction(() => /already tending|could not load/.test(document.querySelector('#status').textContent));
+  if (!options.groupsCollapsed) {
+    await page.locator('details.settings-group').evaluateAll(groups => groups.forEach(group => { group.open = true; }));
+  }
   return { page, consoleErrors };
 }
 
@@ -761,6 +772,47 @@ test('the new-tab illustration shares the cartoon artwork without fake selectabl
   assert.equal(await page.locator('.ambient').evaluate(el => getComputedStyle(el, '::after').animationName), 'none', 'reduced-motion mode must disable the second atmospheric animation');
 });
 
+test('New Tab keeps the main action visible, optional fields expandable, and pin status current', async t => {
+  const page = await openDashboard(t, stateFor(), { width: 1365, height: 768 });
+  await page.goto('https://intent-grove.test/newtab/index.html');
+  await page.waitForFunction(() => document.querySelector('#pin-help')?.hidden === false);
+  await page.locator('#onboarding-skip').click();
+  await page.waitForFunction(() => document.querySelector('#onboarding-overlay').hidden === true);
+  assert.equal(await page.locator('#pin-state').textContent(), 'Not pinned');
+  await page.locator('#pin-help summary').click();
+  assert.match(await page.locator('#pin-explanation').textContent(), /Extensions menu.*pin/i);
+  await page.evaluate(() => globalThis.changeTestPinState(true));
+  await page.waitForFunction(() => document.querySelector('#pin-state').textContent === 'Pinned');
+  assert.equal(await page.locator('#mission-note').isVisible(), false);
+  assert.equal(await page.locator('input[name="return-plan"]').count(), 3, 'optional reminder choices remain in the page');
+  assert.equal(await page.locator('#mission-form button[type="submit"]').isVisible(), true);
+  assert.equal(await page.locator('#browse-freely-btn').isVisible(), true);
+  assert.equal(await page.locator('.search-privacy-note').isVisible(), true);
+  assert.equal(await page.locator('.footer-guide-link').isVisible(), true);
+  const actionBottom = await page.locator('#mission-form button[type="submit"]').evaluate(el => el.getBoundingClientRect().bottom);
+  const browseBottom = await page.locator('#browse-freely-btn').evaluate(el => el.getBoundingClientRect().bottom);
+  const privacyBottom = await page.locator('.search-privacy-note').evaluate(el => el.getBoundingClientRect().bottom);
+  const footerBottom = await page.locator('.page-footer').evaluate(el => el.getBoundingClientRect().bottom);
+  assert.ok(actionBottom <= 768, `Plant Intention should fit above the fold, bottom=${actionBottom}`);
+  assert.ok(browseBottom <= 768, `Browse without an intention should fit above the fold, bottom=${browseBottom}`);
+  assert.ok(privacyBottom <= 768, `the search privacy note should fit above the fold, bottom=${privacyBottom}`);
+  assert.ok(footerBottom <= 768, `the guide and local-data footer should fit above the fold, bottom=${footerBottom}`);
+  await page.locator('.optional-details summary').click();
+  assert.equal(await page.locator('#mission-note').isVisible(), true);
+});
+
+test('Settings puts quick presets first and keeps every other control in simple collapsible groups', async t => {
+  const { page } = await openSettings(t, { groupsCollapsed: true });
+  assert.equal(await page.locator('[data-preset]').count(), 3);
+  assert.equal(await page.locator('details.settings-group').count(), 3);
+  assert.equal(await page.locator('details.settings-group[open]').count(), 0);
+  for (const id of ['gentle', 'choice', 'motion', 'strict-mode', 'ram-guard', 'ram-level', 'search-engine', 'excluded-sites', 'path-pattern-reminders-enabled', 'enable-rewards', 'save']) {
+    assert.equal(await page.locator(`#${id}`).count(), 1, `${id} remains available`);
+  }
+  await page.locator('details.settings-group summary').first().click();
+  assert.equal(await page.locator('#gentle').isVisible(), true);
+});
+
 test('the welcome overlay keeps focus instead of the field behind it', async t => {
   const page = await openDashboard(t);
   await page.goto('https://intent-grove.test/newtab/index.html');
@@ -781,6 +833,21 @@ test('Brave-only footer guidance stays hidden in other Chromium browsers', async
   await page.waitForFunction(() => document.querySelector('#onboarding-overlay')?.hidden === false);
   await page.waitForFunction(() => document.querySelector('.browser-notice-step')?.hidden === true);
   assert.equal(await page.locator('.browser-notice-arrow').isVisible(), false);
+});
+
+test('Brave footer tip points down briefly and can be dismissed', async t => {
+  const page = await openDashboard(t);
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'brave', { configurable: true, value: { isBrave: async () => true } });
+  });
+  await page.goto('https://intent-grove.test/newtab/index.html');
+  await page.waitForFunction(() => document.querySelector('#onboarding-overlay')?.hidden === false);
+  assert.equal(await page.locator('.browser-notice-step').isVisible(), true, 'the tour keeps its full footer instructions');
+  await page.locator('#onboarding-skip').click();
+  await page.waitForFunction(() => document.querySelector('#browser-footer-tip')?.hidden === false);
+  assert.match(await page.locator('#browser-footer-tip').textContent(), /Customize Brave.*Hide footer on New Tab page/);
+  assert.equal(await page.locator('#browser-footer-tip b').textContent(), '↓');
+  await page.waitForFunction(() => document.querySelector('#browser-footer-tip')?.hidden === true, undefined, { timeout: 10000 });
 });
 
 test('first-run walkthrough uses real guide screens with accessible, bounded navigation', async t => {

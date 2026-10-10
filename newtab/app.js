@@ -22,18 +22,53 @@ const guideNext = document.querySelector('#guide-next');
 const guideProgress = document.querySelector('#guide-progress');
 const browserNotice = document.querySelector('.browser-notice-step');
 const browserNoticeArrow = document.querySelector('.browser-notice-arrow');
+const browserFooterTip = document.querySelector('#browser-footer-tip');
+const pinHelp = document.querySelector('#pin-help');
+const pinState = document.querySelector('#pin-state');
+const pinExplanation = document.querySelector('#pin-explanation');
 const compostReminder = document.querySelector('#compost-reminder');
 const compostReminderCopy = document.querySelector('#compost-reminder-copy');
+let footerTipTimer;
 
-async function updateBrowserNotice() {
+async function updatePinStatus() {
+  try {
+    const settings = await chrome.action.getUserSettings();
+    if (typeof settings?.isOnToolbar !== 'boolean') return;
+    pinHelp.hidden = false;
+    pinHelp.dataset.pinned = String(settings.isOnToolbar);
+    pinState.textContent = settings.isOnToolbar ? 'Pinned' : 'Not pinned';
+    pinExplanation.textContent = settings.isOnToolbar
+      ? 'Intent Grove is on your browser toolbar. Click its icon to open the popup.'
+      : 'To pin it, open the Extensions menu (puzzle piece) and click the pin next to Intent Grove.';
+  } catch {
+    // Some Chromium-based browsers do not expose this optional API.
+    pinHelp.hidden = true;
+  }
+}
+
+async function updateBrowserNotice(showFooterTip = true) {
   let isBrave = false;
   try {
     isBrave = typeof navigator.brave?.isBrave === 'function' && await navigator.brave.isBrave() === true;
   } catch { /* Browser detection is optional; never show a potentially wrong tip. */ }
-  if (browserNotice) browserNotice.hidden = !isBrave;
-  if (browserNoticeArrow) browserNoticeArrow.hidden = !isBrave;
+  const tourOpen = document.querySelector('#onboarding-overlay')?.hidden === false;
+  if (browserNotice) browserNotice.hidden = !isBrave || !tourOpen;
+  if (browserNoticeArrow) browserNoticeArrow.hidden = !isBrave || !tourOpen;
+  if (browserFooterTip) {
+    browserFooterTip.hidden = !isBrave || !showFooterTip || tourOpen;
+    if (!browserFooterTip.hidden) {
+      clearTimeout(footerTipTimer);
+      footerTipTimer = setTimeout(() => { browserFooterTip.hidden = true; }, 8500);
+    }
+  }
 }
-void updateBrowserNotice();
+void updatePinStatus();
+window.addEventListener('focus', updatePinStatus);
+chrome.action?.onUserSettingsChanged?.addListener?.(updatePinStatus);
+document.querySelector('#dismiss-footer-tip')?.addEventListener('click', () => {
+  clearTimeout(footerTipTimer);
+  browserFooterTip.hidden = true;
+});
 
 /**
  * Send a message to the service worker with error handling
@@ -98,6 +133,7 @@ async function init() {
       }
     }
   } catch (err) { logError(err, { category: ERROR_CATEGORIES.MESSAGING, function: 'init' }); }
+  void updateBrowserNotice(!onboardingVisible);
   // Never steal focus from the welcome overlay: it is the only visible control
   // until the user dismisses it, so focusing the field behind it would strand
   // keyboard users on an element they cannot see.
@@ -198,6 +234,7 @@ async function finishOnboarding() {
     // overlay was visible, so move focus to the form explicitly here.
     input.focus();
     await message('COMPLETE_ONBOARDING');
+    void updateBrowserNotice(true);
 }
 for (const button of [onboardingStart, onboardingSkip]) {
   button?.addEventListener('click', wrapWithErrorBoundary(finishOnboarding, { category: ERROR_CATEGORIES.MESSAGING, function: 'onboarding.finish', swallow: true }));

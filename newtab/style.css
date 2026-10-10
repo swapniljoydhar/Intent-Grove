@@ -352,3 +352,50 @@ body[data-page-visibility="hidden"] .fireflies i { animation-play-state: paused 
   .guide-slide figcaption { padding: 10px; }
 }
 [data-theme="dark"] .onboarding-guide-link a, [data-theme="dark"] .footer-guide-link { color: #b6d7ad; }
+
+/* Compact first-screen layout: keep the main action visible and tuck optional fields away, not remove them. */
+.page-header{min-height:44px;padding-bottom:0;flex-wrap:wrap}
+.sapling-container{max-width:108px;height:66px;margin:0 auto 4px}
+.hero-content{max-width:620px;margin-bottom:10px}
+.intro-eyebrow{margin-bottom:2px;font-size:.65rem}
+.main-heading{margin-bottom:6px;font-size:clamp(1.55rem,3.2vw,2.1rem);line-height:1.08}
+.hero-description{max-width:600px;font-size:.82rem;line-height:1.38}
+.mission-form{max-width:580px;margin-bottom:6px}
+.form-group{margin-bottom:4px}
+.form-label{margin-bottom:5px;font-size:.82rem}
+#mission-input{height:54px}
+.input-hint{margin-top:4px;font-size:.75rem}
+.optional-details{margin-top:9px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:rgba(255,255,255,.38);text-align:left}
+.optional-details summary{min-height:40px;padding:9px 12px;color:var(--color-text-secondary);font-size:.8rem;font-weight:650;cursor:pointer;list-style:none}
+.optional-details summary::-webkit-details-marker{display:none}
+.optional-details summary::after{content:"+";float:right;color:var(--color-accent-green);font-size:1.1rem;line-height:1}
+.optional-details[open] summary::after{content:"−"}
+.optional-details[open]> :not(summary){margin-right:12px;margin-left:12px}
+.optional-details[open] .note-label{margin-top:4px}
+.optional-details[open] .return-plan{margin-bottom:12px}
+.plant-btn{height:48px;margin-top:9px}
+.search-privacy-note{margin-top:5px;font-size:.7rem;line-height:1.35}
+.alternative-actions{max-width:580px;gap:4px}
+.action-btn{min-height:40px;padding:5px 12px}
+.page-footer{padding-top:5px}
+.footer-content{gap:2px}
+.footer-symbol{font-size:1rem;line-height:1}
+.footer-tagline{font-size:.82rem}
+.footer-note,.footer-guide-link{font-size:.72rem}
+.pin-help{position:relative;margin-left:auto;color:var(--color-text-secondary);font-size:.72rem}
+.pin-help summary{min-height:38px;padding:7px 10px;border:1px solid var(--color-border);border-radius:999px;background:rgba(255,255,255,.6);font-weight:650;cursor:pointer;list-style:none;white-space:nowrap}
+.pin-help summary::-webkit-details-marker{display:none}
+.pin-help summary::before{content:"📌 ";font-size:.7rem}
+.pin-help[data-pinned="true"] summary{color:var(--color-accent-green-dark)}
+.pin-help[data-pinned="false"] summary{color:#805c39}
+.pin-help p{position:absolute;z-index:5;top:calc(100% + 6px);right:0;width:min(300px,80vw);margin:0;padding:12px;border:1px solid var(--color-border);border-radius:12px;background:var(--color-bg-primary);box-shadow:var(--shadow-md);color:var(--color-text-secondary);font-size:.78rem;line-height:1.45;text-align:left}
+.browser-footer-tip{position:fixed;z-index:20;right:14px;bottom:8px;display:flex;align-items:center;gap:10px;width:min(430px,calc(100vw - 28px));padding:10px 12px;border:1px solid var(--color-border);border-radius:12px;background:var(--color-bg-primary);box-shadow:var(--shadow-lg);color:var(--color-text-secondary);font-size:.78rem;line-height:1.4;animation:footerTipFade 8.5s ease forwards}
+.browser-footer-tip b{flex:none;color:var(--color-accent-green);font-size:1.5rem;line-height:1;animation:browserNoticeArrow 1.2s ease-in-out infinite}
+.browser-footer-tip button{flex:none;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:var(--color-text-muted);font-size:1.2rem;cursor:pointer}
+.browser-footer-tip button:focus-visible,.pin-help summary:focus-visible,.optional-details summary:focus-visible{outline:3px solid var(--color-accent-green);outline-offset:2px}
+@keyframes footerTipFade{0%,72%{opacity:1}100%{opacity:0}}
+[data-theme="dark"] .optional-details{background:rgba(30,38,30,.55)}
+[data-theme="dark"] .pin-help summary{background:rgba(30,38,30,.8)}
+@media(max-width:768px){.page-header{justify-content:space-between}.sapling-container{max-width:90px;height:56px}.hero-section{padding:4px 0}.planting-container{padding:10px 18px}.main-heading{font-size:clamp(1.5rem,6vw,2rem)}}
+@media(max-width:480px){.planting-container{padding:8px 14px}.page-header{gap:8px}.logo-mark{width:38px;height:38px}.pin-help{margin-left:auto}.pin-help summary{padding:6px 8px;font-size:.68rem}.hero-description{font-size:.78rem}.page-footer{padding-top:3px}.footer-content{gap:1px}}
+@media(prefers-reduced-motion:reduce){.browser-footer-tip{animation:none}.browser-footer-tip b{animation:none}}

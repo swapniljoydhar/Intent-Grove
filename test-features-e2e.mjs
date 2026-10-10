@@ -338,6 +338,7 @@ test('F2b  New Tab lets a person choose and save a private reminder response pla
   await extPage.goto(`chrome-extension://${extensionId}/newtab/index.html`);
   await extPage.waitForSelector('#mission-form');
   if (await extPage.locator('#onboarding-overlay').isVisible()) await extPage.click('#onboarding-skip');
+  await extPage.locator('.optional-details summary').click();
   await extPage.locator('input[name="return-plan"][value="save"]').check();
   await extPage.fill('#mission-input', 'Read about native plants');
   await extPage.locator('#mission-form').evaluate(form => form.requestSubmit());
