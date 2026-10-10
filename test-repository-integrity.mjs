@@ -8,10 +8,18 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8');
 const packageScript = fs.readFileSync(path.join(root, 'scripts/package.mjs'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+const evidence = fs.readFileSync(path.join(root, 'EVIDENCE.md'), 'utf8');
+const studyProtocol = fs.readFileSync(path.join(root, 'STUDY_PROTOCOL.md'), 'utf8');
 assert.equal(manifest.version, packageJson.version, 'manifest and package versions must stay aligned');
 assert.match(packageScript, /const entries = \[[^\]]*'guide'/s, 'release archives must include the internal onboarding guide');
 assert.match(readme, /skippable four-screen tour/i, 'README must describe the current four-screen onboarding tour');
 assert.doesNotMatch(readme, /five-step sample demo/i, 'README must not describe the retired sample demo as current');
+assert.match(readme, /research-informed reflection aid/i, 'README must distinguish research-informed design from proven efficacy');
+assert.match(readme, /has not conducted a user-outcome study/i, 'README must disclose the absence of an outcome study');
+assert.match(readme, /STUDY_PROTOCOL\.md/, 'README must link the proposed study protocol');
+assert.match(evidence, /not been shown to improve digital well-being/i, 'evidence note must not imply demonstrated product efficacy');
+assert.match(studyProtocol, /Status: design proposal only/i, 'study protocol must say it is a proposal, not an active study');
+assert.match(studyProtocol, /does not authorize data collection/i, 'study protocol must not imply permission to collect research data');
 assert.match(workflow, /name: Validate Intent Grove/, 'the CI workflow should use the current product name');
 assert.match(workflow, /path: dist\/intent-grove\.zip/, 'CI must upload the archive name produced by the package script');
 assert.doesNotMatch(workflow, /focus-forest\.zip|focus-forest-extension|Validate Focus Forest/, 'CI must not retain former product artifact names');

@@ -6,6 +6,7 @@ All notable Intent Grove changes are documented here.
 
 ### Changed
 
+- Rewrote the evidence note to distinguish psychology findings on goal monitoring, implementation intentions, and autonomy from the untested effect of this extension; added a proposed opt-in study protocol while explicitly keeping telemetry inactive.
 - Added a full in-extension guide with fictional, interactive tree and choice-card examples. The demos do not read or write browsing history, send extension messages, or open pages. Linked the guide from New Tab, Settings, and Garden Map; clarified intention language and improved small-screen controls.
 - Added an on-demand, local summary of branching, straight-through, search-refining, and revisiting paths across the last eight UTC weeks, with transparent counts and no personality or health claims.
 - Added a default-off, local path-reflection note that appears only when Insights & Stats is opened, at most once every seven days, when at least four completed gardens are available and one pattern appears in at least three gardens and 60% of the sample. It offers Review and Not now, without requesting browser-notification permission.
